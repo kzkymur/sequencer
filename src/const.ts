@@ -1,0 +1,1 @@
+export const TIMER_UPDATE_EVENT = 'timer_update';
