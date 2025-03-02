@@ -1,3 +1,4 @@
+/// <reference types="vitest" />
 import { resolve } from "path";
 import { defineConfig } from "vite";
 
@@ -12,4 +13,7 @@ export default defineConfig({
     },
   },
   plugins: [],
+  test: {
+    setupFiles: ['@vitest/web-worker'],
+  },
 });

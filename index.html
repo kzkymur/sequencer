@@ -2,12 +2,199 @@
 <html lang="en">
   <head>
     <meta charset="UTF-8" />
-    <link rel="icon" type="image/svg+xml" href="/vite.svg" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Vite + TS</title>
+    <title>Sequencer Demo</title>
+    <style>
+      body {
+        font-family: Arial, sans-serif;
+        max-width: 800px;
+        margin: 20px auto;
+        padding: 20px;
+      }
+      .config-section, .fragment-controls {
+        margin-bottom: 30px;
+        padding: 15px;
+        border: 1px solid #ddd;
+        border-radius: 5px;
+      }
+      .input-group {
+        margin-bottom: 15px;
+      }
+      label {
+        display: block;
+        margin-bottom: 5px;
+        font-weight: bold;
+      }
+      input[type="number"], input[type="text"] {
+        width: 200px;
+        padding: 5px;
+      }
+      button {
+        background: #007bff;
+        color: white;
+        border: none;
+        padding: 8px 15px;
+        border-radius: 4px;
+        cursor: pointer;
+      }
+      button:hover {
+        background: #0056b3;
+      }
+      #fragment-list {
+        list-style: none;
+        padding: 0;
+      }
+      .fragment-item {
+        padding: 10px;
+        margin: 5px 0;
+        background: #f8f9fa;
+        border-radius: 4px;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+      }
+      .timeline {
+        height: 60px;
+        background: #e9ecef;
+        margin: 20px 0;
+        position: relative;
+      }
+      .progress-bar {
+        height: 100%;
+        background: #007bff;
+        width: 0;
+        transition: width 0.1s linear;
+      }
+    </style>
   </head>
   <body>
-    <div id="root"></div>
-    <script type="module" src="/example/src/index.ts"></script>
+    <h1>Sequencer Demo</h1>
+    
+    <div class="config-section">
+      <h2>Configuration</h2>
+      <div class="input-group">
+        <label for="pitch">Pitch (ms):</label>
+        <input type="number" id="pitch" value="100" min="10" step="10">
+      </div>
+      <div class="input-group">
+        <label>
+          <input type="checkbox" id="loop"> Loop Sequencer
+        </label>
+      </div>
+    </div>
+
+    <div class="fragment-controls">
+      <h2>Fragment Management</h2>
+      <form id="fragment-form">
+        <div class="input-group">
+          <label for="frag-name">Fragment Name:</label>
+          <input type="text" id="frag-name" required>
+        </div>
+        <div class="input-group">
+          <label for="frag-duration">Duration (ms):</label>
+          <input type="number" id="frag-duration" required min="100" step="100">
+        </div>
+        <button type="submit">Add Fragment</button>
+      </form>
+      
+      <h3>Fragments</h3>
+      <ul id="fragment-list"></ul>
+    </div>
+
+    <div class="playback-controls">
+      <h2>Playback</h2>
+      <button id="play-btn">Play</button>
+      <button id="stop-btn">Stop</button>
+      <div class="timeline">
+        <div class="progress-bar"></div>
+      </div>
+      <div id="status">Status: Stopped</div>
+    </div>
+
+    <script type="module">
+      import { Sequencer, Fragment } from '/src/main.js';
+
+      let sequencer = new Sequencer(100, false);
+      let fragments = [];
+      
+      // Configuration handlers
+      document.getElementById('pitch').addEventListener('change', (e) => {
+        sequencer.pitch = parseInt(e.target.value);
+      });
+      
+      document.getElementById('loop').addEventListener('change', (e) => {
+        sequencer.loop_frag = e.target.checked;
+      });
+
+      // Fragment form handler
+      document.getElementById('fragment-form').addEventListener('submit', (e) => {
+        e.preventDefault();
+        const name = document.getElementById('frag-name').value;
+        const duration = parseInt(document.getElementById('frag-duration').value);
+        
+        const fragment = new Fragment(name, duration, () => {
+          console.log(`Executing fragment: ${name}`);
+        });
+        
+        fragments.push(fragment);
+        sequencer.push(fragment);
+        updateFragmentList();
+        e.target.reset();
+      });
+
+      // Playback controls
+      document.getElementById('play-btn').addEventListener('click', () => {
+        sequencer.play();
+        updateStatus('Playing');
+        animateProgress();
+      });
+
+      document.getElementById('stop-btn').addEventListener('click', () => {
+        sequencer.stop();
+        updateStatus('Stopped');
+        resetProgress();
+      });
+
+      function updateFragmentList() {
+        const list = document.getElementById('fragment-list');
+        list.innerHTML = fragments.map(frag => `
+          <li class="fragment-item">
+            <span>${frag.name} (${frag.duration}ms)</span>
+            <button onclick="removeFragment('${frag.id}')">Remove</button>
+          </li>
+        `).join('');
+      }
+
+      function animateProgress() {
+        const progressBar = document.querySelector('.progress-bar');
+        let width = 0;
+        const totalDuration = fragments.reduce((sum, frag) => sum + frag.duration, 0);
+        const interval = setInterval(() => {
+          if (width >= 100) {
+            clearInterval(interval);
+            if (sequencer.loop_frag) {
+              width = 0;
+            }
+          }
+          width += (sequencer.pitch / totalDuration) * 100;
+          progressBar.style.width = `${Math.min(width, 100)}%`;
+        }, sequencer.pitch);
+      }
+
+      function resetProgress() {
+        document.querySelector('.progress-bar').style.width = '0%';
+      }
+
+      function updateStatus(text) {
+        document.getElementById('status').textContent = `Status: ${text}`;
+      }
+
+      window.removeFragment = (id) => {
+        const fragment = fragments.find(frag => frag.id === id);
+        sequencer.remove(fragment);
+        fragments = fragments.filter(frag => frag.id !== id);
+        updateFragmentList();
+      };
+    </script>
   </body>
 </html>

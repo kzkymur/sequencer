@@ -9,10 +9,10 @@ export class Sequencer {
   public timerWorker: TimerWorker;
   private isPlaying = false;
 
-  constructor(pitch: number, loopFlag: boolean) {
+  constructor(pitch: number, loopFlag: boolean, useUniversalWorker = false) {
     this.pitch = pitch;
     this.loopFlag = loopFlag;
-    this.timerWorker = new TimerWorker(0, pitch, loopFlag);
+    this.timerWorker = new TimerWorker(0, pitch, loopFlag, useUniversalWorker);
     this.timerWorker.eventTarget.addEventListener(TIMER_UPDATE_EVENT, (e) => {
       this.exec((e as CustomEvent).detail);
     });
@@ -22,7 +22,10 @@ export class Sequencer {
   getPitch(): number { return this.pitch; }
   isLooping(): boolean { return this.loopFlag; }
 
-  setPitch(pitch: number): void { 
+  setPitch(pitch: number): void {
+    if (pitch <= 0 || Number.isNaN(pitch)) {
+      throw new Error(`Invalid pitch value: ${pitch}. Must be positive number`);
+    }
     this.pitch = pitch;
     this.timerWorker.setPitch(pitch);
   }
@@ -42,7 +45,7 @@ export class Sequencer {
 
   remove(fragment: Fragment): void {
     const index = this.fragments.findIndex(f => f.getId() === fragment.getId());
-    if (index === -1) return;
+    if (index === -1) throw new Error('Fragment not found in sequencer');
     this.fragments.splice(index, 1);
     this.updateTotalTime();
   }
@@ -65,7 +68,6 @@ export class Sequencer {
   }
 
   private exec(currentTime: number): void {
-    console.log(currentTime)
     let accumulated = 0;
     for (const fragment of this.fragments) {
       if (currentTime <= accumulated + fragment.getDuration()) {

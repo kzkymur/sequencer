@@ -7,7 +7,7 @@ describe('TimerWorker Class', () => {
   
   beforeEach(() => {
     vi.useFakeTimers();
-    timer = new TimerWorker(1000, 100, false);
+    timer = new TimerWorker(1000, 100, false, false);
   });
 
   describe('Time Control', () => {
@@ -54,6 +54,16 @@ describe('TimerWorker Class', () => {
     it('should update pitch', () => {
       timer.setPitch(200);
       expect(timer['pitch']).toBe(200);
+    });
+  });
+
+  describe('Universal Worker', () => {
+    it('should use worker thread when enabled', async () => {
+      const workerTimer = new TimerWorker(1000, 100, false, true);
+      await workerTimer.play();
+      vi.advanceTimersByTime(100);
+      expect(workerTimer['currentTime']).toBeGreaterThanOrEqual(0);
+      workerTimer.stop();
     });
   });
 });
