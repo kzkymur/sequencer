@@ -1,19 +1,19 @@
 import { Fragment } from './fragments';
-import { TimerWorker } from './timerWorker';
+import { Timer } from './timer';
 import { TIMER_UPDATE_EVENT } from './const';
 
 export class Sequencer {
   private fragments: Fragment[] = [];
   private pitch: number;
   private loopFlag: boolean;
-  public timerWorker: TimerWorker;
+  public timer: Timer;
   private isPlaying = false;
 
   constructor(pitch: number, loopFlag: boolean, useUniversalWorker = false) {
     this.pitch = pitch;
     this.loopFlag = loopFlag;
-    this.timerWorker = new TimerWorker(0, pitch, loopFlag, useUniversalWorker);
-    this.timerWorker.eventTarget.addEventListener(TIMER_UPDATE_EVENT, (e) => {
+    this.timer = new Timer(0, pitch, loopFlag, useUniversalWorker);
+    this.timer.eventTarget.addEventListener(TIMER_UPDATE_EVENT, (e) => {
       this.exec((e as CustomEvent).detail);
     });
   }
@@ -27,12 +27,12 @@ export class Sequencer {
       throw new Error(`Invalid pitch value: ${pitch}. Must be positive number`);
     }
     this.pitch = pitch;
-    this.timerWorker.setPitch(pitch);
+    this.timer.setPitch(pitch);
   }
 
   setLoopFlag(loopFlag: boolean): void {
     this.loopFlag = loopFlag;
-    this.timerWorker.setLoopFlag(loopFlag);
+    this.timer.setLoopFlag(loopFlag);
   }
 
   push(fragment: Fragment): void {
@@ -53,18 +53,18 @@ export class Sequencer {
   play(delay = 0): void {
     if (this.isPlaying) throw new Error('Sequencer is already playing');
     this.isPlaying = true;
-    this.timerWorker.play(delay);
+    this.timer.play(delay);
   }
 
   stop(delay = 0): void {
     if (!this.isPlaying) throw new Error('Sequencer is not playing');
     this.isPlaying = false;
-    this.timerWorker.stop(delay);
+    this.timer.stop(delay);
   }
 
   private updateTotalTime(): void {
     const total = this.fragments.reduce((sum, f) => sum + f.getDuration(), 0);
-    this.timerWorker.setTotalTime(total);
+    this.timer.setTotalTime(total);
   }
 
   private exec(currentTime: number): void {

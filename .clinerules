@@ -15,10 +15,10 @@
             1. array of fragments
             2. pitch [ milisec ]
             3. loop flag
-        - Sequencer has timerWorker.
+        - Sequencer has timer.
         - Also total time to play all fragments in sequencer is known.
     3. Play, stop, replay sequencer.
-        - While sequencer played, timerWorker calculate current_time by pitch time, sequencer detect specific fragment from passed time and fragments's duration information, and exec its callback function.
+        - While sequencer played, timer calculate current_time by pitch time, sequencer detect specific fragment from passed time and fragments's duration information, and exec its callback function.
         - if loop flag is true, sequencer will restart from top fragment when it go over.
     4. Edit sequencer and fragments.
         - Users can edit components at anytime
@@ -53,24 +53,24 @@
 - Sequencer Object
     - Constructor function receive only `pitch` and `loop_frag` properties. They are requied and of course have each methods to change itself.
     - Sequencer have a Fragment Array, `fragments`. It is empty when instance created.
-    - Each sequencer have each timeWorker instance.
+    - Each sequencer have each timer instance.
     - `push(fragment: Fragment)` method
         - Push argument fragment into `fragments`.
         - Throw error if it is already in `fragments`.
     - `remove(fragment: Fragment)` method
         - Remove fragment that have same id as argument fragment from `fragments`.
     - `play(delay: number = 0)` method
-        - Play timerWorker and add eventListener with `this.exec` method after the time for `delay` has passed.
+        - Play timer and add eventListener with `this.exec` method after the time for `delay` has passed.
         - Throw error if it have been already played
     - `stop(delay: number = 0)` method
-        - Stop timerWorker and remove eventListener method after the time for `delay` has passed.
+        - Stop timer and remove eventListener method after the time for `delay` has passed.
         - Throw error if it's not played
     - `private exec(current_time: number)` method
         - Detect specific fragment from `fragments` by `current_time` and exec its callback function.
 
-### `timerWorker.ts`
+### `timer.ts`
 
-- TimerWorker Object
+- Timer Object
     - Constructor function receive only `total_time`, `pitch` and `loop_frag` properties. They are requied and of course have each methods to change itself.
     - `private exec()` method
         - culculate `current_time` by `current_time += pitch`

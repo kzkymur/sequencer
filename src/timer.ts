@@ -1,7 +1,7 @@
 import { TIMER_UPDATE_EVENT } from './const';
 import type { UniversalWorker } from './universalWorker';
 
-export class TimerWorker {
+export class Timer {
   private totalTime: number;
   private pitch: number;
   private loopFlag: boolean;
@@ -42,7 +42,7 @@ export class TimerWorker {
 
     if (this.useUniversalWorker) {
       const { createWorker } = await import('./universalWorker');
-      this.worker = await createWorker(new URL('./timerWorkerImpl', import.meta.url).href);
+      this.worker = await createWorker(new URL('./ticker', import.meta.url).href);
       
       this.worker.addEventListener('message', (e) => {
         this.currentTime = e.data.currentTime;

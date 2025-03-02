@@ -1,13 +1,13 @@
 import { describe, expect, it, vi, beforeEach } from 'vitest';
-import { TimerWorker } from '../src/timerWorker';
+import { Timer } from '../src/timer';
 import { TIMER_UPDATE_EVENT } from '../src/const';
 
 describe('TimerWorker Class', () => {
-  let timer: TimerWorker;
+  let timer: Timer;
   
   beforeEach(() => {
     vi.useFakeTimers();
-    timer = new TimerWorker(1000, 100, false, false);
+    timer = new Timer(1000, 100, false, false);
   });
 
   describe('Time Control', () => {
@@ -59,7 +59,7 @@ describe('TimerWorker Class', () => {
 
   describe('Universal Worker', () => {
     it('should use worker thread when enabled', async () => {
-      const workerTimer = new TimerWorker(1000, 100, false, true);
+      const workerTimer = new Timer(1000, 100, false, true);
       await workerTimer.play();
       vi.advanceTimersByTime(100);
       expect(workerTimer['currentTime']).toBeGreaterThanOrEqual(0);
