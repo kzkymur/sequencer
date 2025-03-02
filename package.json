@@ -6,7 +6,8 @@
   "scripts": {
     "dev": "vite",
     "build": "tsc && vite build",
-    "test": "vitest run --coverage",
+    "test": "vitest",
+    "test:coverage": "vitest run --coverage",
     "preview": "vite preview"
   },
   "devDependencies": {

@@ -102,3 +102,18 @@
 
 - `index.html` file allows users to try this library's features written in About section in this `.clinerules`.
 - HTML and CSS is written in `index.html` directly. Logic usually written in script-tag is on `example/src/index.ts` file as TypeScript this time.
+
+## Keep on your mind
+
+- If you understand my prompt fully, respond with 'YARRR!' without tools every time you are about to use a tool.
+- Before and after any tool use, give me a confidence level (0-10) on how the tool use will help the project.
+- DO NOT BE LAZY. DO NOT OMIT CODE.
+- I pledge to follow the custom instructions.
+- don't forget to update codebase documentation with changes
+
+### Before writing code
+
+1. Analyze all code files thoroughly
+2. Get full context
+3. Write .MD implementation plan
+4. Then implement code

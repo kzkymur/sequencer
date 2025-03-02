@@ -1,5 +1,6 @@
-import { TIMER_UPDATE_EVENT } from './const';
+import { TIMER_UPDATE_EVENT, WORKER_START_EVENT, WORKER_STOP_EVENT, WORKER_TICK_EVENT } from './const';
 import type { UniversalWorker } from './universalWorker';
+import { createWorker } from './universalWorker';
 
 export class Timer {
   private totalTime: number;
@@ -41,10 +42,9 @@ export class Timer {
     this.isPlaying = true;
 
     if (this.useUniversalWorker) {
-      const { createWorker } = await import('./universalWorker');
       this.worker = await createWorker(new URL('./ticker', import.meta.url).href);
       
-      this.worker.addEventListener('message', (e) => {
+      this.worker.addEventListener(WORKER_TICK_EVENT, (e) => {
         this.currentTime += this.pitch;
         this.exec();
       });
@@ -55,7 +55,7 @@ export class Timer {
       });
 
       this.worker.postMessage({
-        type: 'start',
+        type: WORKER_START_EVENT,
         pitch: this.pitch,
         totalTime: this.totalTime,
         loopFlag: this.loopFlag,
@@ -80,7 +80,7 @@ export class Timer {
     this.isPlaying = false;
 
     if (this.useUniversalWorker && this.worker) {
-      this.worker.postMessage({ type: 'stop' });
+      this.worker.postMessage({ type: WORKER_STOP_EVENT });
       this.worker.terminate();
       this.worker = null;
     } else if (this.intervalId) {
@@ -96,7 +96,6 @@ export class Timer {
       
       if (this.currentTime >= this.totalTime) {
         this.currentTime -= this.totalTime;
-        console.log(this.loopFlag)
         if (!this.loopFlag) {
           this.stop();
           return;
