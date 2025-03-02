@@ -98,6 +98,7 @@
 - All test codes are written in `test` directory and work with Vitest.
 - Coverage is always higher than 90%.
 
-## Example
+## Examples
 
-- `example/index.html` file allows users to try this library's features written in About section in this `.clinerules`.
+- `index.html` file allows users to try this library's features written in About section in this `.clinerules`.
+- HTML and CSS is written in `index.html` directly. Logic usually written in script-tag is on `example/src/index.ts` file as TypeScript this time.
