@@ -45,7 +45,7 @@ export class Timer {
       this.worker = await createWorker(new URL('./ticker', import.meta.url).href);
       
       this.worker.addEventListener('message', (e) => {
-        this.currentTime = e.data.currentTime;
+        this.currentTime += this.pitch;
         this.exec();
       });
       
@@ -96,6 +96,7 @@ export class Timer {
       
       if (this.currentTime >= this.totalTime) {
         this.currentTime -= this.totalTime;
+        console.log(this.loopFlag)
         if (!this.loopFlag) {
           this.stop();
           return;

@@ -82,6 +82,11 @@
     - `stop(delay: number = 0)` method
         - do clearInterval after the time for `delay` has passed.
 
+### `ticker.ts`
+
+- This file works on worker thread.
+- All it does is ticking and sending signal to main thread timer.ts
+
 ### `const.ts`
 
 - This files have const strings and numbers.

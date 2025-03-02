@@ -107,7 +107,7 @@ function updateTotalDuration() {
 }
 
 // Timer updates
-sequencer.timerWorker.eventTarget.addEventListener('timer_update', (e) => {
+sequencer.timer.eventTarget.addEventListener('timer_update', (e) => {
   const currentTime = (e as CustomEvent).detail;
   document.getElementById('timeDisplay')!.textContent = 
     `Current Time: ${currentTime}ms`;
