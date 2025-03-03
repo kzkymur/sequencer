@@ -65,6 +65,22 @@ export class Sequencer {
     this.timer.stop(delay);
   }
 
+  /**
+   * Restarts playback from the beginning
+   * @param delay - Delay in milliseconds before restarting (default: 0)
+   * @throws {Error} If sequencer is not currently playing
+   */
+  replay(delay = 0): void {
+    if (!this.timer.getIsPlaying()) {
+      throw new Error('Sequencer is not playing');
+    }
+    
+    // Stop immediately without delay to ensure clean reset
+    this.timer.stop();
+    this.timer.reset();
+    this.timer.play(delay);
+  }
+
   private updateTotalTime(): void {
     const total = this.fragments.reduce((sum, f) => sum + f.getDuration(), 0);
     this.timer.setTotalTime(total);

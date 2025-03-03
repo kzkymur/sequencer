@@ -109,6 +109,14 @@ export class Timer {
     }
   }
 
+  /**
+   * Resets the timer to initial state
+   * @method
+   */
+  reset(): void {
+    this.currentTime = 0;
+  }
+
   private exec(): void {
     if (!this.useUniversalWorker) {
       this.currentTime += this.pitch;
