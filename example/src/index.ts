@@ -56,25 +56,29 @@ function updateFragmentList(): void {
   `).join('');
 }
 
+const canvas = document.getElementById('visualization-canvas') as HTMLCanvasElement;
+const ctx = canvas.getContext('2d')!;
+
 function animateProgress(): void {
-  const progressBar = document.querySelector('.progress-bar') as HTMLElement;
-  let width = 0;
-  const totalDuration = fragments.reduce((sum, frag) => sum + frag.getDuration(), 0);
-  const interval = setInterval(() => {
-    if (width >= 100) {
-      if (sequencer.isLooping()) {
-        width = 0;
-      } else {
-        clearInterval(interval);
-      }
+  const { width, height } = canvas.getBoundingClientRect();
+  canvas.width = width, canvas.height = height;
+  const renderFrame = () => {
+    if (sequencer.isLooping() || sequencer.timer.getIsPlaying()) {
+      sequencer.renderToCanvas(ctx, {
+        width,
+        height,
+        activeColor: '#ff6b6b',
+        inactiveColor: '#4ecdc4',
+        timeIndicatorColor: '#ffe66d'
+      });
+      requestAnimationFrame(renderFrame);
     }
-    width += (sequencer.getPitch() / totalDuration) * 100;
-    progressBar.style.width = `${Math.min(width, 100)}%`;
-  }, sequencer.getPitch());
+  };
+  requestAnimationFrame(renderFrame);
 }
 
 function resetProgress(): void {
-  (document.querySelector('.progress-bar') as HTMLElement).style.width = '0%';
+  ctx.clearRect(0, 0, canvas.width, canvas.height);
 }
 
 function updateStatus(text: string): void {

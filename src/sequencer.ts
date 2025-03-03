@@ -80,4 +80,70 @@ export class Sequencer {
       accumulated += fragment.getDuration();
     }
   }
+
+  /**
+   * Renders sequencer visualization to canvas context
+   * @param ctx Canvas 2D rendering context
+   * @param options Visualization configuration
+   */
+  renderToCanvas(
+    ctx: CanvasRenderingContext2D,
+    options: {
+      width: number;
+      height: number;
+      activeColor?: string;
+      inactiveColor?: string;
+      timeIndicatorColor?: string;
+    }
+  ): void {
+    const totalDuration = this.fragments.reduce((sum, f) => sum + f.getDuration(), 0);
+    const currentTime = this.timer.getCurrentTime() % totalDuration;
+    const { width, height } = options;
+    const activeColor = options.activeColor || '#ff4757';
+    const inactiveColor = options.inactiveColor || '#2ed573';
+    const timeColor = options.timeIndicatorColor || '#ffa502';
+
+    // Clear canvas
+    ctx.clearRect(0, 0, width, height);
+
+    // Draw timeline background
+    ctx.fillStyle = inactiveColor;
+    ctx.fillRect(0, height / 2 - 2, width, 4);
+
+    // Draw fragments
+    let accumulated = 0;
+    for (const fragment of this.fragments) {
+      const fragmentWidth = (fragment.getDuration() / totalDuration) * width;
+      const isActive = currentTime >= accumulated &&
+        currentTime <= accumulated + fragment.getDuration();
+
+      ctx.fillStyle = isActive ? activeColor : inactiveColor;
+      ctx.fillRect(
+        (accumulated / totalDuration) * width,
+        height / 2 - 15,
+        fragmentWidth,
+        30
+      );
+
+      // Fragment name
+      ctx.fillStyle = '#ffffff';
+      ctx.textAlign = 'center';
+      ctx.textBaseline = 'middle';
+      ctx.font = '12px Arial';
+      ctx.fillText(
+        fragment.getName(),
+        (accumulated / totalDuration) * width + fragmentWidth / 2,
+        height / 2
+      );
+
+      accumulated += fragment.getDuration();
+    }
+
+    // Draw current time indicator
+    ctx.fillStyle = timeColor;
+    const indicatorX = (currentTime / totalDuration) * width;
+    ctx.beginPath();
+    ctx.arc(indicatorX, height / 2, height / 2, 0, Math.PI * 2);
+    ctx.fill();
+  }
 }
