@@ -42,6 +42,24 @@ describe('Sequencer Class', () => {
       expect(() => sequencer.stop()).toThrow();
     });
 
+    it('should throw for negative play delay', () => {
+      expect(() => sequencer.play(-100)).toThrow('non-negative number');
+    });
+
+    it('should throw for NaN play delay', () => {
+      expect(() => sequencer.play(NaN)).toThrow('non-negative number');
+    });
+
+    it('should throw for negative stop delay', () => {
+      sequencer.play();
+      expect(() => sequencer.stop(-100)).toThrow('non-negative number');
+    });
+
+    it('should throw for NaN stop delay', () => {
+      sequencer.play();
+      expect(() => sequencer.stop(NaN)).toThrow('non-negative number');
+    });
+
     it('should execute fragment callbacks with precise timing', () => {
       const fragment1 = new Fragment('Test1', 100, mockCallback);
       const fragment2 = new Fragment('Test2', 50, mockCallback);

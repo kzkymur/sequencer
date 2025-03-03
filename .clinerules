@@ -92,6 +92,10 @@
 - This files have const strings and numbers.
 - For example, the name of event name.
 
+## JSDoc
+
+- All public methods have JSDoc
+
 ## Test
 
 - Each files and functions have test file.
@@ -115,5 +119,6 @@
 
 1. Analyze all code files thoroughly
 2. Get full context
-3. Write .MD implementation plan
-4. Then implement code
+4. Ask question and clear implementation
+5. Write .MD implementation plan
+6. Then implement code

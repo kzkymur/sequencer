@@ -47,6 +47,9 @@ export class Timer {
   }
 
   play(delay = 0): void {
+    if (Number.isNaN(delay) || delay < 0) {
+      throw new Error(`Invalid delay value: ${delay}. Must be non-negative number`);
+    }
     if (this.isPlaying) {
       throw new Error('Timer is already playing');
     }
@@ -86,6 +89,9 @@ export class Timer {
   }
 
   stop(delay = 0): void {
+    if (Number.isNaN(delay) || delay < 0) {
+      throw new Error(`Invalid delay value: ${delay}. Must be non-negative number`);
+    }
     if (!this.isPlaying) {
       throw new Error('Timer is not playing');
     }

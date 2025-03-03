@@ -27,6 +27,24 @@ describe('TimerWorker Class', () => {
       expect(() => timer.play()).toThrow('Timer is already playing');
     });
 
+    it('should throw for negative play delay', () => {
+      expect(() => timer.play(-100)).toThrow('non-negative number');
+    });
+
+    it('should throw for NaN play delay', () => {
+      expect(() => timer.play(NaN)).toThrow('non-negative number');
+    });
+
+    it('should throw for negative stop delay', () => {
+      timer.play();
+      expect(() => timer.stop(-100)).toThrow('non-negative number');
+    });
+
+    it('should throw for NaN stop delay', () => {
+      timer.play();
+      expect(() => timer.stop(NaN)).toThrow('non-negative number');
+    });
+
     it('should accumulate time', () => {
       timer.play();
       vi.advanceTimersByTime(300);

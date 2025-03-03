@@ -50,11 +50,17 @@ export class Sequencer {
   }
 
   play(delay = 0): void {
+    if (Number.isNaN(delay) || delay < 0) {
+      throw new Error(`Invalid delay value: ${delay}. Must be non-negative number`);
+    }
     if (this.timer.getIsPlaying()) throw new Error('Sequencer is already playing');
     this.timer.play(delay);
   }
 
   stop(delay = 0): void {
+    if (Number.isNaN(delay) || delay < 0) {
+      throw new Error(`Invalid delay value: ${delay}. Must be non-negative number`);
+    }
     if (!this.timer.getIsPlaying()) throw new Error('Sequencer is not playing');
     this.timer.stop(delay);
   }
