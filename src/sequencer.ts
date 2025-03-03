@@ -7,7 +7,6 @@ export class Sequencer {
   private pitch: number;
   private loopFlag: boolean;
   public timer: Timer;
-  private isPlaying = false;
 
   constructor(pitch: number, loopFlag: boolean, useUniversalWorker = false) {
     this.pitch = pitch;
@@ -51,14 +50,12 @@ export class Sequencer {
   }
 
   play(delay = 0): void {
-    if (this.isPlaying) throw new Error('Sequencer is already playing');
-    this.isPlaying = true;
+    if (this.timer.getIsPlaying()) throw new Error('Sequencer is already playing');
     this.timer.play(delay);
   }
 
   stop(delay = 0): void {
-    if (!this.isPlaying) throw new Error('Sequencer is not playing');
-    this.isPlaying = false;
+    if (!this.timer.getIsPlaying()) throw new Error('Sequencer is not playing');
     this.timer.stop(delay);
   }
 

@@ -12,6 +12,10 @@ export class Timer {
   private isPlaying = false;
   public eventTarget = new EventTarget();
 
+  getIsPlaying(): boolean {
+    return this.isPlaying;
+  }
+
   constructor(
     totalTime: number,
     pitch: number,
