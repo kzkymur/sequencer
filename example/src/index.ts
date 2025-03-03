@@ -1,4 +1,4 @@
-import { Sequencer, Fragment } from '../../src/main';
+import { Sequencer, Fragment } from '../../dist/seauencer-lib';
 
 let sequencer: Sequencer = new Sequencer(100, false);
 let fragments: Fragment[] = [];

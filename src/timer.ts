@@ -1,6 +1,7 @@
 import { TIMER_UPDATE_EVENT, WORKER_START_EVENT, WORKER_STOP_EVENT, WORKER_TICK_EVENT } from './const';
 import type { UniversalWorker } from './universalWorker';
 import { createWorker } from './universalWorker';
+import { log } from './logger';
 
 export class Timer {
   private totalTime: number;
@@ -48,7 +49,7 @@ export class Timer {
     if (this.useUniversalWorker) {
       this.worker = await createWorker(new URL('./ticker', import.meta.url).href);
       
-      this.worker.addEventListener(WORKER_TICK_EVENT, (e) => {
+      this.worker.addEventListener(WORKER_TICK_EVENT, () => {
         this.currentTime += this.pitch;
         this.exec();
       });
@@ -66,10 +67,10 @@ export class Timer {
         delay
       });
     } else {
-      console.log(`Starting timer with ${this.pitch}ms pitch after ${delay}ms delay`);
+      log(`Starting timer with ${this.pitch}ms pitch after ${delay}ms delay`);
       this.intervalId = setTimeout(() => {
         this.intervalId = setInterval(() => {
-          console.log(`Timer tick at ${this.currentTime}ms`);
+          log(`Timer tick at ${this.currentTime}ms`);
           this.exec();
         }, this.pitch);
       }, delay);
@@ -80,7 +81,7 @@ export class Timer {
     if (!this.isPlaying) {
       throw new Error('TimerWorker not playing');
     }
-    console.log(`Stopping timer after ${delay}ms delay`);
+    log(`Stopping timer after ${delay}ms delay`);
     this.isPlaying = false;
 
     if (this.useUniversalWorker && this.worker) {
