@@ -98,14 +98,22 @@ export class Timer {
     log(`Stopping timer after ${delay}ms delay`);
     this.isPlaying = false;
 
-    if (this.useUniversalWorker && this.worker) {
-      this.worker.postMessage({ type: WORKER_STOP_EVENT });
-      this.worker.terminate();
-      this.worker = null;
-    } else if (this.intervalId) {
-      clearTimeout(this.intervalId);
-      clearInterval(this.intervalId);
-      this.intervalId = null;
+    const executeStop = () => {
+      if (this.useUniversalWorker && this.worker) {
+        this.worker.postMessage({ type: WORKER_STOP_EVENT });
+        this.worker.terminate();
+        this.worker = null;
+      } else if (this.intervalId) {
+        clearTimeout(this.intervalId);
+        clearInterval(this.intervalId);
+        this.intervalId = null;
+      }
+    };
+
+    if (delay > 0) {
+      setTimeout(executeStop, delay);
+    } else {
+      executeStop();
     }
   }
 
