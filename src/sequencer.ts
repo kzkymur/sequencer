@@ -8,6 +8,12 @@ export class Sequencer {
   private loopFlag: boolean;
   public timer: Timer;
 
+  /**
+   * Creates a Sequencer instance
+   * @param {number} pitch - Update interval in milliseconds
+   * @param {boolean} loopFlag - Whether to loop playback
+   * @param {boolean} [useUniversalWorker=false] - Use shared worker for timing
+   */
   constructor(pitch: number, loopFlag: boolean, useUniversalWorker = false) {
     this.pitch = pitch;
     this.loopFlag = loopFlag;
@@ -16,11 +22,30 @@ export class Sequencer {
       this.exec((e as CustomEvent).detail);
     });
   }
+/**
+ * Gets a copy of all fragments in the sequencer
+ * @returns {Fragment[]} Copy of fragments array
+ */
+getFragments(): Fragment[] { return [...this.fragments]; }
 
-  getFragments(): Fragment[] { return [...this.fragments]; }
-  getPitch(): number { return this.pitch; }
-  isLooping(): boolean { return this.loopFlag; }
+/**
+ * Gets the current update interval
+ * @returns {number} Pitch value in milliseconds
+ */
+getPitch(): number { return this.pitch; }
 
+/**
+ * Checks if sequencer is configured to loop
+ * @returns {boolean} Current loop status
+ */
+isLooping(): boolean { return this.loopFlag; }
+
+
+  /**
+   * Updates the sequencer's update interval
+   * @param {number} pitch - New interval in milliseconds
+   * @throws {Error} If pitch is invalid (≤0 or NaN)
+   */
   setPitch(pitch: number): void {
     if (pitch <= 0 || Number.isNaN(pitch)) {
       throw new Error(`Invalid pitch value: ${pitch}. Must be positive number`);
@@ -29,11 +54,20 @@ export class Sequencer {
     this.timer.setPitch(pitch);
   }
 
+  /**
+   * Updates the loop configuration
+   * @param {boolean} loopFlag - New loop status
+   */
   setLoopFlag(loopFlag: boolean): void {
     this.loopFlag = loopFlag;
     this.timer.setLoopFlag(loopFlag);
   }
 
+  /**
+   * Adds fragment to sequencer
+   * @param {Fragment} fragment - Fragment to add
+   * @throws {Error} If fragment already exists
+   */
   push(fragment: Fragment): void {
     if (this.fragments.some(f => f.getId() === fragment.getId())) {
       throw new Error('Fragment already exists in sequencer');
@@ -42,6 +76,11 @@ export class Sequencer {
     this.updateTotalTime();
   }
 
+  /**
+   * Removes fragment from sequencer
+   * @param {Fragment} fragment - Fragment to remove
+   * @throws {Error} If fragment not found
+   */
   remove(fragment: Fragment): void {
     const index = this.fragments.findIndex(f => f.getId() === fragment.getId());
     if (index === -1) throw new Error('Fragment not found in sequencer');
@@ -49,6 +88,11 @@ export class Sequencer {
     this.updateTotalTime();
   }
 
+  /**
+   * Starts playback
+   * @param {number} [delay=0] - Delay in milliseconds before starting
+   * @throws {Error} If delay is invalid or already playing
+   */
   play(delay = 0): void {
     if (Number.isNaN(delay) || delay < 0) {
       throw new Error(`Invalid delay value: ${delay}. Must be non-negative number`);
@@ -105,8 +149,8 @@ export class Sequencer {
   renderToCanvas(
     ctx: CanvasRenderingContext2D,
     options: {
-      width: number;
-      height: number;
+      width?: number;
+      height?: number;
       activeColor?: string;
       inactiveColor?: string;
       timeIndicatorColor?: string;
@@ -114,7 +158,8 @@ export class Sequencer {
   ): void {
     const totalDuration = this.fragments.reduce((sum, f) => sum + f.getDuration(), 0);
     const currentTime = this.timer.getCurrentTime() % totalDuration;
-    const { width, height } = options;
+    const width = options.width || ctx.canvas.width;
+    const height = options.height || ctx.canvas.height;
     const activeColor = options.activeColor || '#ff4757';
     const inactiveColor = options.inactiveColor || '#2ed573';
     const timeColor = options.timeIndicatorColor || '#ffa502';
