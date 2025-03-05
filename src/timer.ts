@@ -1,7 +1,12 @@
-import { TIMER_UPDATE_EVENT, WORKER_START_EVENT, WORKER_STOP_EVENT, WORKER_TICK_EVENT } from './const';
+import { TIMER_UPDATE_EVENT, WORKER_START_EVENT, WORKER_STOP_EVENT, WORKER_TICK_EVENT, WORKER_UPDATE_EVENT } from './const';
 import type { UniversalWorker } from './universalWorker';
 import { createWorker } from './universalWorker';
 import { log } from './logger';
+
+type TimerUpdate =
+  | { type: 'pitch'; value: number }
+  | { type: 'totalTime'; value: number }
+  | { type: 'loopFlag'; value: boolean };
 
 export class Timer {
   private totalTime: number;
@@ -33,6 +38,7 @@ export class Timer {
       throw new Error('Total time must be larger than 0');
     }
     this.totalTime = totalTime;
+    this.sendUpdate({ type: 'totalTime', value: totalTime });
   }
 
   setPitch(pitch: number): void {
@@ -40,10 +46,21 @@ export class Timer {
       throw new Error(`Invalid pitch value: ${pitch}. Must be positive number`);
     }
     this.pitch = pitch;
+    this.sendUpdate({ type: 'pitch', value: pitch });
+  }
+
+  private sendUpdate(update: TimerUpdate): void {
+    if (this.worker) {
+      this.worker.postMessage({
+        type: WORKER_UPDATE_EVENT,
+        payload: update
+      });
+    }
   }
 
   setLoopFlag(loopFlag: boolean): void {
     this.loopFlag = loopFlag;
+    this.sendUpdate({ type: 'loopFlag', value: loopFlag });
   }
 
   play(delay = 0): void {
@@ -59,7 +76,8 @@ export class Timer {
       createWorker(new URL('./ticker', import.meta.url).href).then(worker => {
         this.worker = worker;
         
-        this.worker.addEventListener(WORKER_TICK_EVENT, () => {
+        this.worker.addEventListener("message", (e) => {
+          if (e.data.type !== WORKER_TICK_EVENT) return;
           this.currentTime += this.pitch;
           this.exec();
         });
@@ -128,13 +146,13 @@ export class Timer {
   private exec(): void {
     if (!this.useUniversalWorker) {
       this.currentTime += this.pitch;
+    }
       
-      if (this.currentTime >= this.totalTime) {
-        this.currentTime -= this.totalTime;
-        if (!this.loopFlag) {
-          this.stop();
-          return;
-        }
+    if (this.currentTime >= this.totalTime) {
+      this.currentTime -= this.totalTime;
+      if (!this.loopFlag) {
+        this.stop();
+        return;
       }
     }
 

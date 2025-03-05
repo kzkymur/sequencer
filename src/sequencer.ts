@@ -1,6 +1,7 @@
 import { Fragment } from './fragments';
 import { Timer } from './timer';
 import { TIMER_UPDATE_EVENT } from './const';
+import { log } from './logger';
 
 export class Sequencer {
   private fragments: Fragment[] = [];
@@ -50,6 +51,7 @@ isLooping(): boolean { return this.loopFlag; }
     if (pitch <= 0 || Number.isNaN(pitch)) {
       throw new Error(`Invalid pitch value: ${pitch}. Must be positive number`);
     }
+
     this.pitch = pitch;
     this.timer.setPitch(pitch);
   }
