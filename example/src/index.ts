@@ -34,16 +34,51 @@ document.getElementById('fragment-form')!.addEventListener('submit', (e: SubmitE
 });
 
 // Playback controls
-document.getElementById('play-btn')!.addEventListener('click', () => {
-  sequencer.play();
-  updateStatus('Playing');
-  animateProgress();
+const replayBtn = document.getElementById('replay-btn') as HTMLButtonElement;
+const playBtn = document.getElementById('play-btn') as HTMLButtonElement;
+const stopBtn = document.getElementById('stop-btn') as HTMLButtonElement;
+
+// Initialize button states
+stopBtn.disabled = true;
+replayBtn.disabled = true;
+
+replayBtn.addEventListener('click', async () => {
+  try {
+    updateStatus('Replaying');
+    playBtn.disabled = true;
+    stopBtn.disabled = false;
+    replayBtn.disabled = true;
+    await sequencer.replay();
+  } catch (err) {
+    updateStatus(`Error: ${(err as Error).message}`);
+  } finally {
+    playBtn.disabled = false;
+    stopBtn.disabled = true;
+    replayBtn.disabled = false;
+  }
 });
 
-document.getElementById('stop-btn')!.addEventListener('click', () => {
+playBtn.addEventListener('click', async () => {
+  updateStatus('Playing');
+  animateProgress();
+  playBtn.disabled = true;
+  stopBtn.disabled = false;
+  replayBtn.disabled = true;
+  await sequencer.play();
+  
+  playBtn.disabled = false;
+  stopBtn.disabled = true;
+  replayBtn.disabled = false;
+  updateStatus('Completed');
+});
+
+stopBtn.addEventListener('click', () => {
   sequencer.stop();
   updateStatus('Stopped');
   resetProgress();
+  playBtn.disabled = false;
+  stopBtn.disabled = true;
+  animateProgress();        // Force re-render
 });
 
 function updateFragmentList(): void {
@@ -63,17 +98,23 @@ function animateProgress(): void {
   const { width, height } = canvas.getBoundingClientRect();
   canvas.width = width, canvas.height = height;
   const renderFrame = () => {
-    if (sequencer.isLooping() || sequencer.timer.getIsPlaying()) {
-      sequencer.renderToCanvas(ctx, {
-        width,
-        height,
-        activeColor: '#ff6b6b',
-        inactiveColor: '#4ecdc4',
-        timeIndicatorColor: '#ffe66d'
-      });
-      requestAnimationFrame(renderFrame);
-    }
-  };
+    // Always render visualization regardless of play state
+    sequencer.renderToCanvas(ctx, {
+      width,
+      height,
+      activeColor: '#ff6b6b',
+      inactiveColor: '#4ecdc4',
+      timeIndicatorColor: '#ffe66d'
+    });
+    requestAnimationFrame(renderFrame);
+    sequencer.renderToCanvas(ctx, {
+      width,
+      height,
+      activeColor: '#ff6b6b',
+      inactiveColor: '#4ecdc4',
+      timeIndicatorColor: '#ffe66d'
+    });
+  }
   requestAnimationFrame(renderFrame);
 }
 

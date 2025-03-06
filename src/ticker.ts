@@ -1,10 +1,6 @@
 /// <reference lib="webworker" />
 
-const WORKER_START_EVENT = '@sequence/start';
-const WORKER_STOP_EVENT = '@sequence/stop';
-const WORKER_TICK_EVENT = '@sequence/tick';
-const WORKER_UPDATE_EVENT = '@sequence/update';
-// const TIMER_UPDATE_EVENT = '@sequence/timer_update';
+import { WORKER_START_EVENT, WORKER_STOP_EVENT, WORKER_TICK_EVENT, WORKER_UPDATE_EVENT } from './const';
 
 let intervalId: number | NodeJS.Timeout | null = null;
 let pitch: number = 10;

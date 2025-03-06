@@ -40,6 +40,11 @@
       button:hover {
         background: #0056b3;
       }
+      button:disabled {
+        opacity: 0.6;
+        cursor: not-allowed;
+        background-color: #cccccc !important;
+      }
       #fragment-list {
         list-style: none;
         padding: 0;
@@ -101,6 +106,7 @@
 
     <div class="playback-controls">
       <h2>Playback</h2>
+      <button id="replay-btn" style="background-color: #28a745">Replay</button>
       <button id="play-btn">Play</button>
       <button id="stop-btn">Stop</button>
       <div class="timeline">

@@ -18,6 +18,9 @@ export class Timer {
   private isPlaying = false;
   public eventTarget = new EventTarget();
 
+  public completionPromise!: Promise<void>;
+  private resolveCompletion!: () => void;
+
   getIsPlaying(): boolean {
     return this.isPlaying;
   }
@@ -63,37 +66,42 @@ export class Timer {
     this.sendUpdate({ type: 'loopFlag', value: loopFlag });
   }
 
-  play(delay = 0): void {
+  async play(delay = 0): Promise<void> {
     if (Number.isNaN(delay) || delay < 0) {
       throw new Error(`Invalid delay value: ${delay}. Must be non-negative number`);
     }
     if (this.isPlaying) {
       throw new Error('Timer is already playing');
     }
+
+    this.completionPromise = new Promise((resolve) => {
+      this.resolveCompletion = resolve;
+    });
+
     this.isPlaying = true;
 
     if (this.useUniversalWorker) {
-      createWorker(new URL('./ticker', import.meta.url).href).then(worker => {
-        this.worker = worker;
+      const worker = await createWorker(new URL('./ticker', import.meta.url).href);
+      this.worker = worker;
+      
+      const messageHandler = (e: MessageEvent) => {
+        if (e.data.type !== WORKER_TICK_EVENT) return;
+        this.currentTime += this.pitch;
+        this.exec();
+      };
+      this.worker.addEventListener("message", messageHandler);
         
-        this.worker.addEventListener("message", (e) => {
-          if (e.data.type !== WORKER_TICK_EVENT) return;
-          this.currentTime += this.pitch;
-          this.exec();
-        });
-        
-        this.worker.addEventListener('error', (err) => {
-          console.error('Worker error:', err);
-          this.stop();
-        });
+      this.worker.addEventListener('error', (err) => {
+        console.error('Worker error:', err);
+        this.stop();
+      });
 
-        this.worker.postMessage({
-          type: WORKER_START_EVENT,
-          pitch: this.pitch,
-          totalTime: this.totalTime,
-          loopFlag: this.loopFlag,
-          delay
-        });
+      this.worker.postMessage({
+        type: WORKER_START_EVENT,
+        pitch: this.pitch,
+        totalTime: this.totalTime,
+        loopFlag: this.loopFlag,
+        delay
       });
     } else {
       log(`Starting timer with ${this.pitch}ms pitch after ${delay}ms delay`);
@@ -104,6 +112,7 @@ export class Timer {
         }, this.pitch);
       }, delay);
     }
+    return this.completionPromise;
   }
 
   stop(delay = 0): void {
@@ -117,6 +126,7 @@ export class Timer {
     this.isPlaying = false;
 
     const executeStop = () => {
+      this.resolveCompletion();
       if (this.useUniversalWorker && this.worker) {
         this.worker.postMessage({ type: WORKER_STOP_EVENT });
         this.worker.terminate();
@@ -151,6 +161,7 @@ export class Timer {
     if (this.currentTime >= this.totalTime) {
       this.currentTime -= this.totalTime;
       if (!this.loopFlag) {
+        this.resolveCompletion();
         this.stop();
         return;
       }

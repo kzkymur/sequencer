@@ -1,7 +1,6 @@
 import { Fragment } from './fragments';
 import { Timer } from './timer';
 import { TIMER_UPDATE_EVENT } from './const';
-import { log } from './logger';
 
 export class Sequencer {
   private fragments: Fragment[] = [];
@@ -23,23 +22,23 @@ export class Sequencer {
       this.exec((e as CustomEvent).detail);
     });
   }
-/**
- * Gets a copy of all fragments in the sequencer
- * @returns {Fragment[]} Copy of fragments array
- */
-getFragments(): Fragment[] { return [...this.fragments]; }
+  /**
+   * Gets a copy of all fragments in the sequencer
+   * @returns {Fragment[]} Copy of fragments array
+   */
+  getFragments(): Fragment[] { return [...this.fragments]; }
 
-/**
- * Gets the current update interval
- * @returns {number} Pitch value in milliseconds
- */
-getPitch(): number { return this.pitch; }
+  /**
+   * Gets the current update interval
+   * @returns {number} Pitch value in milliseconds
+   */
+  getPitch(): number { return this.pitch; }
 
-/**
- * Checks if sequencer is configured to loop
- * @returns {boolean} Current loop status
- */
-isLooping(): boolean { return this.loopFlag; }
+  /**
+   * Checks if sequencer is configured to loop
+   * @returns {boolean} Current loop status
+   */
+  isLooping(): boolean { return this.loopFlag; }
 
 
   /**
@@ -95,12 +94,21 @@ isLooping(): boolean { return this.loopFlag; }
    * @param {number} [delay=0] - Delay in milliseconds before starting
    * @throws {Error} If delay is invalid or already playing
    */
-  play(delay = 0): void {
+  play(delay = 0): Promise<void> {
     if (Number.isNaN(delay) || delay < 0) {
       throw new Error(`Invalid delay value: ${delay}. Must be non-negative number`);
     }
     if (this.timer.getIsPlaying()) throw new Error('Sequencer is already playing');
-    this.timer.play(delay);
+    return this.timer.play(delay);
+  }
+
+  isPlaying(): boolean {
+    return this.timer.getIsPlaying();
+  }
+
+  waitCompleted(): Promise<void> {
+    if (!this.timer.getIsPlaying()) throw new Error('Sequencer is not playing');
+    return this.timer.completionPromise;
   }
 
   stop(delay = 0): void {
@@ -116,15 +124,14 @@ isLooping(): boolean { return this.loopFlag; }
    * @param delay - Delay in milliseconds before restarting (default: 0)
    * @throws {Error} If sequencer is not currently playing
    */
-  replay(delay = 0): void {
-    if (!this.timer.getIsPlaying()) {
-      throw new Error('Sequencer is not playing');
+  replay(delay = 0): Promise<void> {
+    if (this.timer.getIsPlaying()) {
+      throw new Error('Sequencer is playing');
     }
     
     // Stop immediately without delay to ensure clean reset
-    this.timer.stop();
     this.timer.reset();
-    this.timer.play(delay);
+    return this.timer.play(delay);
   }
 
   private updateTotalTime(): void {

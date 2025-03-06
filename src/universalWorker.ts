@@ -25,7 +25,7 @@ function isVitest(): boolean {
   export async function createWorker(scriptPath: string): Promise<UniversalWorker> {
     if (!isNode() || isVitest()) {
       // ブラウザ環境の場合：標準の WebWorker を利用
-      return new Worker(new URL(scriptPath));
+      return new Worker(new URL(scriptPath), { type: "module"});
     } else {
       // Node.js 環境の場合：worker_threads を利用
       const { Worker } = await import("worker_threads");
