@@ -4,6 +4,11 @@
 
 - This is a Headless TypeScript Library project with Vite and Vitest.
 - `Sequencer` is the name of this project.
+- There are two modes Queue and Independent. Independent Mode extends Queue Mode.
+
+### Queue Mode
+
+- Sequencer deal with Fragment Array as just a queue.
 - Users can do these things
     1. Make fragments.
         - Each fragments are constructed with these properties.
@@ -11,15 +16,42 @@
             2. duration [ milisec ]
             3. callback function
     2. Construct sequencer by arranging fragments.
-        - Sequencer is contructed with
+        - Sequencer is constructed with
             1. array of fragments
             2. pitch [ milisec ]
-            3. loop flag
+            3. speed [ number ]
+            4. loop flag
         - Sequencer has timer.
         - Also total time to play all fragments in sequencer is known.
     3. Play, stop, replay sequencer.
-        - While sequencer played, timer calculate current_time by pitch time, sequencer detect specific fragment from passed time and fragments's duration information, and exec its callback function.
-        - if loop flag is true, sequencer will restart from top fragment when it go over.
+        - While sequencer is playing, timer calculates `current_time` at each pitch time, sequencer detect specific fragment from passed time and fragments's duration information, and exec its callback function.
+        - If loop flag is true, sequencer will restart from top fragment when it go over.
+    4. Edit sequencer and fragments.
+        - Users can edit components at anytime
+
+### Independent Mode
+
+- Basicaly it's almost same as Queue Mode.
+- All different thing is how to deal with Fragment Array.
+- Users can do these things
+    1. Make fragments.
+        - Each fragments are constructed with these properties.
+            1. name
+            2. duration [ milisec ]
+            3. start point [ milisec ]
+            3. callback function
+    2. Construct sequencer by arranging fragments.
+        - Sequencer is constructed with
+            1. array of fragments
+            2. pitch [ milisec ]
+            3. speed [ number ]
+                - This is playback speed. Default = 1.0
+            4. loop flag
+        - Sequencer has timer.
+        - Total time to play all fragments in sequencer is **NOT** known.
+    3. Play, stop, replay sequencer.
+        - While sequencer is playing, timer calculates `current_time` at each pitch time, sequencer detect specific fragment that fall within working duration calculated from its start-point and duration, and exec its callback function.
+        - If loop flag is set to true, sequencer will restart from `current_time = 0` when it exceeds the duration.
     4. Edit sequencer and fragments.
         - Users can edit components at anytime
 
@@ -34,7 +66,7 @@
 
 ### `fragments.ts`
 
-- Fragment Object
+- Fragment Object (Queue Mode)
     - Constructor function recieve these propeties and make unique `id` (string)
         1. `name`
             - requied
@@ -48,10 +80,15 @@
         - return the copy instance of itself
         - All difference is unique `id`
 
+- IndependentFragment Object (Independent Mode)
+    - This extends Fragment Object.
+    - Constructor function receives `startPoint` property in additonal, along with other parameters.
+    - That all properties have each methods to change itself.
+
 ### `sequencer.ts`
 
-- Sequencer Object
-    - Constructor function receive only `pitch` and `loop_frag` properties. They are requied and of course have each methods to change itself.
+- Sequencer Object (Queue Mode)
+    - Constructor function receive only `pitch`, `speed` and `loop_frag` properties. They are requied and of course have each methods to change itself.
     - Sequencer have a Fragment Array, `fragments`. It is empty when instance created.
     - Each sequencer have each timer instance.
     - `push(fragment: Fragment)` method
@@ -65,15 +102,25 @@
     - `stop(delay: number = 0)` method
         - Stop timer and remove eventListener method after the time for `delay` has passed.
         - Throw error if it's not played
+    - `replay(delay: number = 0)` method
+        - Reset `current_time` and do same thing as `play` method.
+        - Throw error if it have been already played
     - `private exec(current_time: number)` method
-        - Detect specific fragment from `fragments` by `current_time` and exec its callback function.
+        - Detect specific fragment from `fragments` by `current_time` and execute its callback function.
+
+- IndependentSequencer Object (Independent Mode)
+    - This extends Sequencer Object.
+    - The order of Fragment Array, `fragments` does **NOT** matter.
+    - `private exec(current_time: number)` method is All different thing.
+        - Detect specific fragments from `fragments` by `current_time` and, `startPoint` and `duration` properties of each fragments.
+        - Then execute their callback functions.
 
 ### `timer.ts`
 
 - Timer Object
-    - Constructor function receive only `total_time`, `pitch` and `loop_frag` properties. They are requied and of course have each methods to change itself.
+    - Constructor function receive only `total_time`, `pitch`, `speed` and `loop_frag` properties. They are requied and of course have each methods to change itself.
     - `private exec()` method
-        - culculate `current_time` by `current_time += pitch`
+        - culculate `current_time` by `current_time += pitch * speed`
         - dispatch event to sequencer with `current_time` calculated.
         - if loop flag is true, `current_time /= total_time` when it go over `total_time`.
         - else, exec `this.stop()` when it go over `total_time`.
@@ -85,12 +132,12 @@
 ### `ticker.ts`
 
 - This file works on worker thread.
-- All it does is ticking and sending signal to main thread timer.ts
+- All it does is ticking and sending signal to main thread `timer.ts` at each pitch time 
 
 ### `const.ts`
 
 - This files have const strings and numbers.
-- For example, the name of event name.
+- For example, the name of event.
 
 ## JSDoc
 
@@ -111,9 +158,8 @@
 
 - If you understand my prompt fully, respond with 'YARRR!' without tools every time you are about to use a tool.
 - Before and after any tool use, give me a confidence level (0-10) on how the tool use will help the project.
-- DO NOT BE LAZY. DO NOT OMIT CODE.
-- I pledge to follow the custom instructions.
-- don't forget to update codebase documentation with changes
+- **DO NOT BE LAZY. DO NOT OMIT CODE**
+- Don't forget to update codebase documentation with changes
 
 ### Before writing code
 
@@ -122,3 +168,8 @@
 4. Ask question and clear implementation
 5. Write .MD implementation plan
 6. Then implement code
+
+### Before Task Complete
+
+1. **DO LINT, BUILD AND TEST COMMAND `npm run lint`, `npm run build`, `npm run test:coverage`**.
+2. Fix errors if it occurs.
