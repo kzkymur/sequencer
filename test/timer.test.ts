@@ -73,6 +73,26 @@ describe('TimerWorker Class', () => {
     it('should handle negative pitch values', () => {
       expect(() => timer.setPitch(-100)).toThrow(`Invalid pitch value: -100. Must be positive number`);
     });
+
+    it('should accumulate time with 0.5 speed', () => {
+      timer.setSpeed(0.5);
+      timer.play();
+      vi.advanceTimersByTime(300);
+      expect(timer['currentTime']).toBe(150); // 300ms real time * 0.5 speed
+    });
+
+    it('should accumulate time with 2.0 speed', () => {
+      timer.setSpeed(2.0);
+      timer.play();
+      vi.advanceTimersByTime(300);
+      expect(timer['currentTime']).toBe(600); // 300ms real time * 2.0 speed
+    });
+
+    it('should throw for non-positive speed values', () => {
+      expect(() => timer.setSpeed(0)).toThrow('Invalid speed value: 0. Must be positive number');
+      expect(() => timer.setSpeed(-1)).toThrow('Invalid speed value: -1. Must be positive number');
+      expect(() => timer.setSpeed(NaN)).toThrow('Invalid speed value: NaN. Must be positive number');
+    });
   });
 
   describe('Event Dispatching', () => {

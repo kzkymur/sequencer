@@ -209,7 +209,7 @@ export class Timer {
 
   private exec(): void {
     if (!this.useUniversalWorker) {
-      this.currentTime += this.pitch;
+      this.currentTime += this.pitch * this.speed;
     }
       
     if (this.currentTime >= this.totalTime) {
