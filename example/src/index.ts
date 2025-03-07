@@ -1,12 +1,17 @@
 import { Sequencer, Fragment } from '../../src/main';
 
-let sequencer: Sequencer = new Sequencer(100, false, true);
+let sequencer: Sequencer = new Sequencer(100, false, 1.0, true);
 let fragments: Fragment[] = [];
 
 // Configuration handlers
 document.getElementById('pitch')!.addEventListener('change', (e: Event) => {
   const target = e.target as HTMLInputElement;
   sequencer.setPitch( parseInt(target.value));
+});
+
+document.getElementById('speed')!.addEventListener('change', (e: Event) => {
+  const target = e.target as HTMLInputElement;
+  sequencer.setSpeed(Number(target.value));
 });
 
 document.getElementById('loop')!.addEventListener('change', (e: Event) => {

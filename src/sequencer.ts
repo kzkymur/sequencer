@@ -4,20 +4,17 @@ import { TIMER_UPDATE_EVENT } from './const';
 
 export class Sequencer {
   private fragments: Fragment[] = [];
-  private pitch: number;
-  private loopFlag: boolean;
   public timer: Timer;
 
   /**
    * Creates a Sequencer instance
-   * @param {number} pitch - Update interval in milliseconds
-   * @param {boolean} loopFlag - Whether to loop playback
-   * @param {boolean} [useUniversalWorker=false] - Use shared worker for timing
+   * @param pitch - Update interval in milliseconds
+   * @param loopFlag - Whether to loop playback
+   * @param speed - Playback speed multiplier (1.0 = normal speed)
+   * @param useUniversalWorker - Use shared worker for timing precision
    */
-  constructor(pitch: number, loopFlag: boolean, useUniversalWorker = false) {
-    this.pitch = pitch;
-    this.loopFlag = loopFlag;
-    this.timer = new Timer(0, pitch, loopFlag, useUniversalWorker);
+  constructor(private pitch: number, private loopFlag: boolean, private speed = 1.0, useUniversalWorker = false) {
+    this.timer = new Timer(0, pitch, loopFlag, this.speed, useUniversalWorker);
     this.timer.eventTarget.addEventListener(TIMER_UPDATE_EVENT, (e) => {
       this.exec((e as CustomEvent).detail);
     });
@@ -40,7 +37,6 @@ export class Sequencer {
    */
   isLooping(): boolean { return this.loopFlag; }
 
-
   /**
    * Updates the sequencer's update interval
    * @param {number} pitch - New interval in milliseconds
@@ -53,6 +49,19 @@ export class Sequencer {
 
     this.pitch = pitch;
     this.timer.setPitch(pitch);
+  }
+
+  /**
+   * Sets playback speed multiplier
+   * @param speed - Speed multiplier (1.0 = normal speed)
+   * @throws Error if value is not positive
+   */
+  setSpeed(speed: number): void {
+    if (speed <= 0 || Number.isNaN(speed)) {
+      throw new Error(`Invalid speed value: ${speed}. Must be positive number`);
+    }
+    this.speed = speed;
+    this.timer.setSpeed(speed);
   }
 
   /**
@@ -102,6 +111,10 @@ export class Sequencer {
     return this.timer.play(delay);
   }
 
+  /**
+   * Checks if sequencer is currently playing
+   * @returns True if playback is active
+   */
   isPlaying(): boolean {
     return this.timer.getIsPlaying();
   }

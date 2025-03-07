@@ -7,7 +7,7 @@ describe('TimerWorker Class', () => {
   
   beforeEach(() => {
     vi.useFakeTimers();
-    timer = new Timer(1000, 100, false, false);
+    timer = new Timer(1000, 100, false, 1.0, false);
   });
 
   describe('Time Control', () => {
@@ -22,7 +22,7 @@ describe('TimerWorker Class', () => {
       expect(() => timer.stop()).toThrow('Timer is not playing');
     });
 
-    it('should throw when starting already running timer', () => {
+    it('should throw when starting already running timer', async () => {
       timer.play();
       expect(() => timer.play()).toThrow('Timer is already playing');
     });
@@ -125,8 +125,8 @@ describe('TimerWorker Class', () => {
 
   describe('Universal Worker', () => {
     it('should use worker thread when enabled', async () => {
-      const workerTimer = new Timer(1000, 100, false, true);
-      await workerTimer.play();
+      const workerTimer = new Timer(1000, 100, false, 1.0, true);
+      workerTimer.play();
       vi.advanceTimersByTime(100);
       expect(workerTimer['currentTime']).toBeGreaterThanOrEqual(0);
       workerTimer.stop();

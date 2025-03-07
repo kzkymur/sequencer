@@ -21,21 +21,41 @@ export class Timer {
   public completionPromise!: Promise<void>;
   private resolveCompletion!: () => void;
 
-  getIsPlaying(): boolean {
-    return this.isPlaying;
-  }
-
+  /**
+   * Creates a Timer instance
+   * @param totalTime - Total duration in milliseconds
+   * @param pitch - Interval duration between ticks in milliseconds
+   * @param loopFlag - Whether to loop when reaching totalTime
+   * @param speed - Playback speed multiplier (default: 1.0)
+   * @param useUniversalWorker - Use web worker for timing (default: false)
+   */
   constructor(
     totalTime: number,
     pitch: number,
     loopFlag: boolean,
-    private useUniversalWorker = true
+    private speed: number = 1.0,
+    private useUniversalWorker = false
   ) {
     this.totalTime = totalTime;
     this.pitch = pitch;
     this.loopFlag = loopFlag;
+    this.speed = speed;
+    this.useUniversalWorker = useUniversalWorker;
   }
 
+  /**
+   * Gets current playback state
+   * @returns True if timer is active
+   */
+  getIsPlaying(): boolean {
+    return this.isPlaying;
+  }
+
+  /**
+   * Sets total timer duration
+   * @param totalTime - New duration in milliseconds
+   * @throws Error if value is negative or NaN
+   */
   setTotalTime(totalTime: number): void {
     if (totalTime < 0 || Number.isNaN(totalTime)) {
       throw new Error('Total time must be larger than 0');
@@ -44,12 +64,29 @@ export class Timer {
     this.sendUpdate({ type: 'totalTime', value: totalTime });
   }
 
+  /**
+   * Sets interval duration between ticks
+   * @param pitch - New pitch value in milliseconds
+   * @throws Error if value is not positive
+   */
   setPitch(pitch: number): void {
     if (pitch <= 0 || Number.isNaN(pitch)) {
       throw new Error(`Invalid pitch value: ${pitch}. Must be positive number`);
     }
     this.pitch = pitch;
     this.sendUpdate({ type: 'pitch', value: pitch });
+  }
+
+  /**
+   * Sets playback speed multiplier
+   * @param speed - Speed multiplier (1.0 = normal speed)
+   * @throws Error if value is not positive
+   */
+  setSpeed(speed: number): void {
+    if (speed <= 0 || Number.isNaN(speed)) {
+      throw new Error(`Invalid speed value: ${speed}. Must be positive number`);
+    }
+    this.speed = speed;
   }
 
   private sendUpdate(update: TimerUpdate): void {
@@ -61,12 +98,22 @@ export class Timer {
     }
   }
 
+  /**
+   * Sets whether the timer should loop
+   * @param loopFlag - True to enable looping
+   */
   setLoopFlag(loopFlag: boolean): void {
     this.loopFlag = loopFlag;
     this.sendUpdate({ type: 'loopFlag', value: loopFlag });
   }
 
-  async play(delay = 0): Promise<void> {
+  /**
+   * Starts the timer
+   * @param delay - Delay in milliseconds before starting (default: 0)
+   * @returns Promise that resolves when timer completes
+   * @throws Error if invalid delay or timer already playing
+   */
+  play(delay = 0): Promise<void> {
     if (Number.isNaN(delay) || delay < 0) {
       throw new Error(`Invalid delay value: ${delay}. Must be non-negative number`);
     }
@@ -80,13 +127,23 @@ export class Timer {
 
     this.isPlaying = true;
 
-    if (this.useUniversalWorker) {
-      const worker = await createWorker(new URL('./ticker', import.meta.url).href);
+    if (!this.useUniversalWorker) {
+      log(`Starting timer with ${this.pitch}ms pitch after ${delay}ms delay`);
+      this.intervalId = setTimeout(() => {
+        this.intervalId = setInterval(() => {
+          log(`Timer tick at ${this.currentTime}ms`);
+          this.exec();
+        }, this.pitch);
+      }, delay);
+      return this.completionPromise;
+    }
+
+    createWorker(new URL('./ticker', import.meta.url).href).then(worker => {
       this.worker = worker;
       
       const messageHandler = (e: MessageEvent) => {
         if (e.data.type !== WORKER_TICK_EVENT) return;
-        this.currentTime += this.pitch;
+        this.currentTime += this.pitch * this.speed;
         this.exec();
       };
       this.worker.addEventListener("message", messageHandler);
@@ -103,18 +160,15 @@ export class Timer {
         loopFlag: this.loopFlag,
         delay
       });
-    } else {
-      log(`Starting timer with ${this.pitch}ms pitch after ${delay}ms delay`);
-      this.intervalId = setTimeout(() => {
-        this.intervalId = setInterval(() => {
-          log(`Timer tick at ${this.currentTime}ms`);
-          this.exec();
-        }, this.pitch);
-      }, delay);
-    }
+    })
     return this.completionPromise;
   }
 
+  /**
+   * Stops the timer
+   * @param delay - Delay in milliseconds before stopping (default: 0)
+   * @throws Error if invalid delay or timer not playing
+   */
   stop(delay = 0): void {
     if (Number.isNaN(delay) || delay < 0) {
       throw new Error(`Invalid delay value: ${delay}. Must be non-negative number`);
@@ -172,6 +226,10 @@ export class Timer {
     }));
   }
 
+  /**
+   * Gets current elapsed time
+   * @returns Current time in milliseconds
+   */
   getCurrentTime(): number {
     return this.currentTime;
   }
