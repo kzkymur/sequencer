@@ -42,6 +42,26 @@ describe('Sequencer Class', () => {
       expect(() => sequencer.stop()).toThrow();
     });
 
+    it('should resume playback correctly after stop', () => {
+      const fragment = new Fragment('ResumeTest', 400, mockCallback);
+      sequencer.push(fragment);
+      
+      // First play session
+      sequencer.play();
+      vi.advanceTimersByTime(200); // 200ms elapsed
+      expect(sequencer.getCurrentTime()).toBe(200);
+      expect(mockCallback).toHaveBeenCalledTimes(2); // Called at 100ms pitch
+      sequencer.stop();
+
+      // Second play session
+      sequencer.play();
+      vi.advanceTimersByTime(100); // Total 300ms
+      expect(sequencer.getCurrentTime()).toBe(300);
+      expect(mockCallback).toHaveBeenCalledTimes(3); // 100ms, 200ms, 300ms
+      
+      sequencer.stop();
+    });
+
     it('should throw for negative play delay', () => {
       expect(() => sequencer.play(-100)).toThrow('non-negative number');
     });

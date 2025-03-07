@@ -26,6 +26,12 @@ export class Sequencer {
   getFragments(): Fragment[] { return [...this.fragments]; }
 
   /**
+   * Gets the current playback time
+   * @returns {number} Current time in milliseconds
+   */
+  getCurrentTime(): number { return this.timer.getCurrentTime(); }
+
+  /**
    * Gets the current update interval
    * @returns {number} Pitch value in milliseconds
    */
