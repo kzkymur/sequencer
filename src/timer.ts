@@ -130,6 +130,7 @@ export class Timer {
     if (!this.useUniversalWorker) {
       log(`Starting timer with ${this.pitch}ms pitch after ${delay}ms delay`);
       this.intervalId = setTimeout(() => {
+        this.exec(true);
         this.intervalId = setInterval(() => {
           log(`Timer tick at ${this.currentTime}ms`);
           this.exec();
@@ -143,7 +144,6 @@ export class Timer {
       
       const messageHandler = (e: MessageEvent) => {
         if (e.data.type !== WORKER_TICK_EVENT) return;
-        this.currentTime += this.pitch * this.speed;
         this.exec();
       };
       this.worker.addEventListener("message", messageHandler);
@@ -153,13 +153,11 @@ export class Timer {
         this.stop();
       });
 
-      this.worker.postMessage({
-        type: WORKER_START_EVENT,
-        pitch: this.pitch,
-        totalTime: this.totalTime,
-        loopFlag: this.loopFlag,
-        delay
-      });
+      this.intervalId = setTimeout(() => {
+        if (this.worker == null) return;
+        this.worker.postMessage({ type: WORKER_START_EVENT, pitch: this.pitch });
+        this.exec(true);
+      }, delay)
     })
     return this.completionPromise;
   }
@@ -192,45 +190,38 @@ export class Timer {
       }
     };
 
-    if (delay > 0) {
-      setTimeout(executeStop, delay);
-    } else {
-      executeStop();
-    }
+    if (delay > 0) setTimeout(executeStop, delay);
+    else executeStop();
   }
 
   /**
-   * Resets the timer to initial state
-   * @method
+   * Resets the timer's current progress to initial state (0ms)
+   * Does not stop playback if timer is running
+   * Can be called while timer is active or stopped
    */
-  reset(): void {
-    this.currentTime = 0;
-  }
+  reset(): void { this.currentTime = 0; }
 
-  private exec(): void {
-    if (!this.useUniversalWorker) {
-      this.currentTime += this.pitch * this.speed;
-    }
+  private calcCurrentTime(): void {
+    this.currentTime += this.pitch * this.speed;
       
     if (this.currentTime >= this.totalTime) {
       this.currentTime -= this.totalTime;
       if (!this.loopFlag) {
         this.resolveCompletion();
         this.stop();
-        return;
       }
     }
+  }
 
-    this.eventTarget.dispatchEvent(new CustomEvent(TIMER_UPDATE_EVENT, {
-      detail: this.currentTime
-    }));
+  private exec(isInitial: boolean = false): void {
+    if (!isInitial) this.calcCurrentTime();
+
+    this.eventTarget.dispatchEvent(new CustomEvent(TIMER_UPDATE_EVENT, { detail: this.currentTime }));
   }
 
   /**
    * Gets current elapsed time
    * @returns Current time in milliseconds
    */
-  getCurrentTime(): number {
-    return this.currentTime;
-  }
+  getCurrentTime(): number { return this.currentTime; }
 }

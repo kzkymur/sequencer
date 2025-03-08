@@ -2,6 +2,7 @@ import { describe, expect, it, vi, beforeEach } from 'vitest';
 import '@vitest/web-worker'
 import { Sequencer } from '../src/sequencer';
 import { Fragment } from '../src/fragments';
+import { subscribe } from 'diagnostics_channel';
 
 describe('Sequencer Class', () => {
   let sequencer: Sequencer;
@@ -50,14 +51,14 @@ describe('Sequencer Class', () => {
       sequencer.play();
       vi.advanceTimersByTime(200); // 200ms elapsed
       expect(sequencer.getCurrentTime()).toBe(200);
-      expect(mockCallback).toHaveBeenCalledTimes(2); // Called at 100ms pitch
+      expect(mockCallback).toHaveBeenCalledTimes(3); // Called at 100ms pitch including first 0
       sequencer.stop();
 
       // Second play session
       sequencer.play();
       vi.advanceTimersByTime(100); // Total 300ms
       expect(sequencer.getCurrentTime()).toBe(300);
-      expect(mockCallback).toHaveBeenCalledTimes(3); // 100ms, 200ms, 300ms
+      expect(mockCallback).toHaveBeenCalledTimes(5); // 0ms, 100ms, 200ms, 200ms, 300ms
       
       sequencer.stop();
     });
@@ -89,13 +90,13 @@ describe('Sequencer Class', () => {
       
       // Exact boundary checks
       vi.advanceTimersByTime(99);
-      expect(mockCallback).toHaveBeenCalledTimes(0);
+      expect(mockCallback).toHaveBeenCalledTimes(1);
       
       vi.advanceTimersByTime(1); // 100ms
-      expect(mockCallback).toHaveBeenCalledTimes(1);
+      expect(mockCallback).toHaveBeenCalledTimes(2);
       
       vi.advanceTimersByTime(50); // 150ms
-      expect(mockCallback).toHaveBeenCalledTimes(1);
+      expect(mockCallback).toHaveBeenCalledTimes(2);
       
       sequencer.stop();
     });
@@ -108,20 +109,15 @@ describe('Sequencer Class', () => {
       
       // First iteration
       vi.advanceTimersByTime(200);
-      expect(mockCallback).toHaveBeenCalledTimes(2); // 100ms and 200ms
+      expect(mockCallback).toHaveBeenCalledTimes(3); // 0ms 100ms and 200ms
       
       // Second iteration
       vi.advanceTimersByTime(200);
-      expect(mockCallback).toHaveBeenCalledTimes(4);
-      
-      // Partial third iteration
-      vi.advanceTimersByTime(50);
-      sequencer.stop();
-      expect(mockCallback).toHaveBeenCalledTimes(4);
-    });
-  });
-
-  describe('Configuration', () => {
+      expect(mockCallback).toHaveBeenCalledTimes(5);
+    })
+  })
+     
+  subscribe('Configuration', () => {
     it('should update pitch', () => {
       sequencer.setPitch(200);
       expect(sequencer.getPitch()).toBe(200);

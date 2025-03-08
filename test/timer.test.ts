@@ -103,9 +103,9 @@ describe('TimerWorker Class', () => {
       timer.play();
       vi.advanceTimersByTime(250);
       
-      expect(mockListener).toHaveBeenCalledTimes(2);
-      expect(mockListener.mock.calls[0][0].detail).toBe(100);
-      expect(mockListener.mock.calls[1][0].detail).toBe(200);
+      expect(mockListener).toHaveBeenCalledTimes(3);
+      expect(mockListener.mock.calls[0][0].detail).toBe(0);
+      expect(mockListener.mock.calls[1][0].detail).toBe(100);
     });
 
     it('should stop dispatching after stop()', () => {
@@ -117,7 +117,7 @@ describe('TimerWorker Class', () => {
       timer.stop();
       vi.advanceTimersByTime(200);
       
-      expect(mockListener).toHaveBeenCalledTimes(1);
+      expect(mockListener).toHaveBeenCalledTimes(2);
     });
 
     it('should clean up listeners on stop()', () => {

@@ -1,2 +1,2 @@
-export { Sequencer } from './sequencer';
-export { Fragment } from './fragments';
+export { Sequencer, IndependentSequencer } from './sequencer';
+export { Fragment, IndependentFragment } from './fragments';

@@ -1,5 +1,5 @@
-import { describe, expect, it, beforeEach } from 'vitest';
-import { Fragment } from '../src/fragments';
+import { describe, expect, it, beforeEach, vi } from 'vitest';
+import { Fragment, IndependentFragment } from '../src/fragments';
 
 describe('Fragment Class', () => {
   it('should create fragment with unique ID', () => {
@@ -53,5 +53,39 @@ describe('Fragment Class', () => {
       expect(copy.getName()).toBe(original.getName());
       expect(copy.getDuration()).toBe(original.getDuration());
     });
+  });
+});
+
+describe('IndependentFragment Class', () => {
+  it('should create with start point', () => {
+    const fragment = new IndependentFragment('test', 1000, 500);
+    expect(fragment.getStartPoint()).toBe(500);
+  });
+
+  it('should update start point', () => {
+    const fragment = new IndependentFragment('test', 1000, 500);
+    fragment.setStartPoint(750);
+    expect(fragment.getStartPoint()).toBe(750);
+  });
+
+  it('should calculate end time', () => {
+    const fragment = new IndependentFragment('test', 1000, 500);
+    expect(fragment.getStartPoint() + fragment.getDuration()).toBe(1500);
+  });
+
+  it('should copy with all properties', () => {
+    const original = new IndependentFragment('test', 1000, 500);
+    const copy = original.copy();
+    expect(copy).toBeInstanceOf(IndependentFragment);
+    expect(copy.getStartPoint()).toBe(original.getStartPoint());
+    expect(copy.getDuration()).toBe(original.getDuration());
+  });
+
+  it('should maintain callback through copy', () => {
+    const mockCallback = vi.fn();
+    const original = new IndependentFragment('test', 1000, 500, mockCallback);
+    const copy = original.copy();
+    copy.getCallback()!();
+    expect(mockCallback).toHaveBeenCalled();
   });
 });

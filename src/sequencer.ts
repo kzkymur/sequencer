@@ -1,4 +1,4 @@
-import { Fragment } from './fragments';
+import { Fragment, IndependentFragment } from './fragments';
 import { Timer } from './timer';
 import { TIMER_UPDATE_EVENT } from './const';
 
@@ -52,7 +52,6 @@ export class Sequencer {
     if (pitch <= 0 || Number.isNaN(pitch)) {
       throw new Error(`Invalid pitch value: ${pitch}. Must be positive number`);
     }
-
     this.pitch = pitch;
     this.timer.setPitch(pitch);
   }
@@ -121,9 +120,7 @@ export class Sequencer {
    * Checks if sequencer is currently playing
    * @returns True if playback is active
    */
-  isPlaying(): boolean {
-    return this.timer.getIsPlaying();
-  }
+  isPlaying(): boolean { return this.timer.getIsPlaying(); }
 
   waitCompleted(): Promise<void> {
     if (!this.timer.getIsPlaying()) throw new Error('Sequencer is not playing');
@@ -147,7 +144,6 @@ export class Sequencer {
     if (this.timer.getIsPlaying()) {
       throw new Error('Sequencer is playing');
     }
-    
     // Stop immediately without delay to ensure clean reset
     this.timer.reset();
     return this.timer.play(delay);
@@ -158,7 +154,7 @@ export class Sequencer {
     this.timer.setTotalTime(total);
   }
 
-  private exec(currentTime: number): void {
+  protected exec(currentTime: number): void {
     let accumulated = 0;
     for (const fragment of this.fragments) {
       if (currentTime <= accumulated + fragment.getDuration()) {
@@ -234,5 +230,53 @@ export class Sequencer {
     ctx.beginPath();
     ctx.arc(indicatorX, height / 2, height / 2, 0, Math.PI * 2);
     ctx.fill();
+  }
+}
+
+/**
+ * IndependentSequencer handles fragments with individual start points
+ */
+export class IndependentSequencer extends Sequencer {
+  /**
+   * Executes callbacks for all fragments active at currentTime
+   * @param currentTime - Current playback time in milliseconds
+   */
+  protected exec(currentTime: number): void {
+    // Handle loop reset if enabled
+    console.log("currentTime: " + currentTime);
+    if (this.isLooping()) {
+      const totalTime = this.getTotalTime();
+      console.log(`Total time: ${totalTime}, ${totalTime > 0 && currentTime >= totalTime}`)
+      if (totalTime > 0 && currentTime >= totalTime) {
+        currentTime %= totalTime;
+      }
+    }
+
+    console.log("currentTime: " + currentTime);
+
+    // Check all fragments for activation
+    for (const fragment of this.getFragments()) {
+      if (fragment instanceof IndependentFragment) {
+        const start = fragment.getStartPoint();
+        const end = start + fragment.getDuration();
+        
+        if (currentTime >= start && currentTime < end) {
+          fragment.getCallback()?.();
+        }
+      }
+    }
+  }
+
+  /**
+   * Gets total time (max fragment end time)
+   * @returns Maximum end time of all fragments
+   */
+  getTotalTime(): number {
+    return this.getFragments().reduce((max, frag) => {
+      if (frag instanceof IndependentFragment) {
+        return Math.max(max, frag.getStartPoint() + frag.getDuration());
+      }
+      return max;
+    }, 0);
   }
 }

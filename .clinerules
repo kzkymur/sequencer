@@ -160,6 +160,7 @@
 - Before and after any tool use, give me a confidence level (0-10) on how the tool use will help the project.
 - **DO NOT BE LAZY. DO NOT OMIT CODE**
 - Don't forget to update codebase documentation with changes
+- Run test and fix errors in iterations after running tests.
 
 ### Before writing code
 
