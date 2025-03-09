@@ -107,13 +107,20 @@
         - Throw error if it have been already played
     - `private exec(current_time: number)` method
         - Detect specific fragment from `fragments` by `current_time` and execute its callback function.
+    - `renderToCanvas(ctx: Context2D, options: object)` method
+        - Render the status of the sequencer onto Canvas Context2D.
+        - User can see how the sequencer work by calling this function at each pitch times.
 
 - IndependentSequencer Object (Independent Mode)
     - This extends Sequencer Object.
-    - The order of Fragment Array, `fragments` does **NOT** matter.
-    - `private exec(current_time: number)` method is All different thing.
+    - The order of Fragment Array, `fragments`, does **NOT** matter.
+    - `private exec(current_time: number)` method.
         - Detect specific fragments from `fragments` by `current_time` and, `startPoint` and `duration` properties of each fragments.
         - Then execute their callback functions.
+    - `renderToCanvas(ctx: Context2D, options: object)` method
+        - How to render is changed because the architecture of the Fragment Array is NOT same.
+        - Specifically, fragments might run parallelly. So At first this function calculates the maximum number of fragments   at same time.
+    - Above functions are All different thing.
 
 ### `timer.ts`
 
