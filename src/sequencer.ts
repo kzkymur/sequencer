@@ -104,6 +104,23 @@ export class Sequencer {
   }
 
   /**
+   * Inserts fragment at specified position
+   * @param {number} index - Position to insert at
+   * @param {Fragment} fragment - Fragment to insert
+   * @throws {Error} If fragment exists or index invalid
+   */
+  insert(index: number, fragment: Fragment): void {
+    if (index < 0 || index > this.fragments.length) {
+      throw new Error(`Invalid index: ${index}. Must be between 0 and ${this.fragments.length}`);
+    }
+    if (this.fragments.some(f => f.getId() === fragment.getId())) {
+      throw new Error('Fragment already exists in sequencer');
+    }
+    this.fragments.splice(index, 0, fragment);
+    this.updateTotalTime();
+  }
+
+  /**
    * Starts playback
    * @param {number} [delay=0] - Delay in milliseconds before starting
    * @throws {Error} If delay is invalid or already playing
@@ -252,6 +269,13 @@ export class Sequencer {
  * IndependentSequencer handles fragments with individual start points
  */
 export class IndependentSequencer extends Sequencer {
+  /**
+   * @override Disabled for IndependentSequencer
+   * @throws {Error} Always throws since insertion order is irrelevant
+   */
+  insert(_: number, __: Fragment): never {
+    throw new Error('Insert operation not supported for IndependentSequencer');
+  }
   /**
    * Executes callbacks for all fragments active at currentTime
    * @param currentTime - Current playback time in milliseconds

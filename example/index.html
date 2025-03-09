@@ -1,13 +1,37 @@
-<!doctype html>
+<!DOCTYPE html>
 <html lang="en">
-  <head>
-    <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Sequencer Demo</title>
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Sequencer Examples</title>
     <style>
+        body { font-family: Arial, sans-serif; max-width: 800px; margin: 2rem auto; }
+        .nav-list { list-style: none; padding: 0; }
+        .nav-item { margin: 1rem 0; }
+        .nav-link {
+            display: block;
+            padding: 1rem;
+            background: #f0f0f0;
+            border-radius: 4px;
+            text-decoration: none;
+            color: #333;
+            transition: background 0.2s;
+        }
+        .nav-link:hover { background: #e0e0e0; }
+        h1 { text-align: center; color: #2c3e50; }
     </style>
-  </head>
-  <body>
-    <h1>Sequencer Demo</h1>
-  </body>
+</head>
+<body>
+    <h1>Sequencer Examples</h1>
+    <nav>
+        <ul class="nav-list">
+            <li class="nav-item">
+                <a href="queue/index.html" class="nav-link">Queue Mode Example</a>
+            </li>
+            <li class="nav-item">
+                <a href="independent/index.html" class="nav-link">Independent Mode Example</a>
+            </li>
+        </ul>
+    </nav>
+</body>
 </html>

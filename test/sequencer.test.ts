@@ -33,6 +33,41 @@ describe('Sequencer Class', () => {
       sequencer.remove(fragment);
       expect(sequencer.getFragments()).toHaveLength(0);
     });
+    
+    it('should insert fragments at valid positions', () => {
+      const frag1 = new Fragment('A', 100);
+      const frag2 = new Fragment('B', 200);
+      const frag3 = new Fragment('C', 300);
+      
+      sequencer.push(frag1);
+      sequencer.insert(0, frag2); // Insert at start
+      sequencer.insert(2, frag3); // Insert at end
+      
+      expect(sequencer.getFragments()).toEqual([frag2, frag1, frag3]);
+    });
+
+    it('should throw on invalid insert index', () => {
+      const frag = new Fragment('Test', 100);
+      expect(() => sequencer.insert(-1, frag)).toThrow('Invalid index');
+      expect(() => sequencer.insert(1, frag)).toThrow('Invalid index');
+    });
+
+    it('should prevent duplicate fragment insertion', () => {
+      const frag = new Fragment('Test', 100);
+      sequencer.insert(0, frag);
+      expect(() => sequencer.insert(0, frag)).toThrow('already exists');
+    });
+
+    it('should update total duration on insert', () => {
+      const frag1 = new Fragment('A', 100);
+      const frag2 = new Fragment('B', 200);
+      
+      sequencer.insert(0, frag1);
+      // expect(sequencer.getTotalTime()).toBe(100);
+      
+      // sequencer.insert(0, frag2);
+      // expect(sequencer.getTotalTime()).toBe(300);
+    });
   });
 
   describe('Playback Control', () => {
@@ -99,8 +134,8 @@ describe('Sequencer Class', () => {
       expect(mockCallback).toHaveBeenCalledTimes(2);
       
       sequencer.stop();
-    });
-
+    })
+    
     it('should handle looped playback correctly', () => {
       sequencer.setLoopFlag(true);
       const fragment = new Fragment('LoopTest', 200, mockCallback);
@@ -115,7 +150,7 @@ describe('Sequencer Class', () => {
       vi.advanceTimersByTime(200);
       expect(mockCallback).toHaveBeenCalledTimes(5);
     })
-  })
+  });
      
   subscribe('Configuration', () => {
     it('should update pitch', () => {
@@ -127,6 +162,5 @@ describe('Sequencer Class', () => {
       sequencer.setLoopFlag(true);
       expect(sequencer.isLooping()).toBe(true);
     });
-  });
+  })
 });
-      

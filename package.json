@@ -19,6 +19,7 @@
   "scripts": {
     "dev": "vite --config vite.lib.config.ts",
     "build": "tsc && vite build --config vite.lib.config.ts",
+    "lint": "tsc --noEmit",
     "test": "vitest --config vite.lib.config.ts",
     "test:coverage": "vitest run test --coverage --config vite.lib.config.ts",
     "preview": "vite --config vite.app.config.ts"
