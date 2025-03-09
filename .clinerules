@@ -96,6 +96,9 @@
         - Throw error if it is already in `fragments`.
     - `remove(fragment: Fragment)` method
         - Remove fragment that have same id as argument fragment from `fragments`.
+    - `insert(index: number, fragment: Fragment)` method
+        - Insert argument fragment into `fragments`.
+        - Throw error if it is already in `fragments` or invalid index.
     - `play(delay: number = 0)` method
         - Play timer and add eventListener with `this.exec` method after the time for `delay` has passed.
         - Throw error if it have been already played
@@ -114,6 +117,9 @@
 - IndependentSequencer Object (Independent Mode)
     - This extends Sequencer Object.
     - The order of Fragment Array, `fragments`, does **NOT** matter.
+    - `insert` method
+        - should be unavailable because the order of the array does NOT need.
+        - always throw error.
     - `private exec(current_time: number)` method.
         - Detect specific fragments from `fragments` by `current_time` and, `startPoint` and `duration` properties of each fragments.
         - Then execute their callback functions.
@@ -163,6 +169,7 @@
 
 ## Keep on your mind
 
+- Your output will improve more and more the longer you think. Thinking longer is the first priority. No need to worry about my waiting time—I welcome it.
 - If you understand my prompt fully, respond with 'YARRR!' without tools every time you are about to use a tool.
 - Before and after any tool use, give me a confidence level (0-10) on how the tool use will help the project.
 - **DO NOT BE LAZY. DO NOT OMIT CODE**

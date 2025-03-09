@@ -3,7 +3,7 @@ import { Timer } from './timer';
 import { TIMER_UPDATE_EVENT } from './const';
 
 export class Sequencer {
-  private fragments: Fragment[] = [];
+  protected fragments: Fragment[] = [];
   public timer: Timer;
 
   /**
@@ -13,7 +13,7 @@ export class Sequencer {
    * @param speed - Playback speed multiplier (1.0 = normal speed)
    * @param useUniversalWorker - Use shared worker for timing precision
    */
-  constructor(private pitch: number, private loopFlag: boolean, private speed = 1.0, useUniversalWorker = false) {
+  constructor(private pitch: number, private speed = 1.0, private loopFlag: boolean, useUniversalWorker = false) {
     this.timer = new Timer(0, pitch, loopFlag, this.speed, useUniversalWorker);
     this.timer.eventTarget.addEventListener(TIMER_UPDATE_EVENT, (e) => {
       this.exec((e as CustomEvent).detail);
@@ -159,7 +159,7 @@ export class Sequencer {
     return this.timer.play(delay);
   }
 
-  private updateTotalTime(): void {
+  protected updateTotalTime(): void {
     const total = this.fragments.reduce((sum, f) => sum + f.getDuration(), 0);
     this.timer.setTotalTime(total);
   }
@@ -167,7 +167,7 @@ export class Sequencer {
   protected exec(currentTime: number): void {
     let accumulated = 0;
     for (const fragment of this.fragments) {
-      if (currentTime <= accumulated + fragment.getDuration()) {
+      if (currentTime < accumulated + fragment.getDuration()) {
         fragment.getCallback()?.();
         return;
       }
@@ -258,16 +258,12 @@ export class IndependentSequencer extends Sequencer {
    */
   protected exec(currentTime: number): void {
     // Handle loop reset if enabled
-    console.log("currentTime: " + currentTime);
     if (this.isLooping()) {
       const totalTime = this.getTotalTime();
-      console.log(`Total time: ${totalTime}, ${totalTime > 0 && currentTime >= totalTime}`)
       if (totalTime > 0 && currentTime >= totalTime) {
         currentTime %= totalTime;
       }
     }
-
-    console.log("currentTime: " + currentTime);
 
     // Check all fragments for activation
     for (const fragment of this.getFragments()) {
@@ -293,5 +289,113 @@ export class IndependentSequencer extends Sequencer {
       }
       return max;
     }, 0);
+  }
+
+  protected updateTotalTime(): void {
+    this.timer.setTotalTime(this.getTotalTime());
+  }
+
+  /**
+   * Renders sequencer visualization to canvas context for Independent Mode
+   * @param ctx - Canvas 2D rendering context
+   * @param options - Visualization configuration
+   */
+  renderToCanvas(
+    ctx: CanvasRenderingContext2D,
+    options: {
+      width?: number;
+      height?: number;
+      activeColor?: string;
+      inactiveColor?: string;
+      timeIndicatorColor?: string;
+    }
+  ): void {
+    const fragments = this.getFragments().filter((f): f is IndependentFragment => f instanceof IndependentFragment);
+    if (fragments.length === 0) return;
+
+    const totalDuration = this.getTotalTime();
+    if (totalDuration === 0) return;
+
+    const currentTime = this.timer.getCurrentTime();
+    const effectiveTime = this.isLooping() ? currentTime % totalDuration : currentTime;
+
+    const width = options.width || ctx.canvas.width;
+    const height = options.height || ctx.canvas.height;
+    const activeColor = options.activeColor || '#ff4757';
+    const inactiveColor = options.inactiveColor || '#2ed573';
+    const timeColor = options.timeIndicatorColor || '#ffa502';
+
+    // Calculate maximum concurrent fragments
+    const points: Array<{ time: number, type: 'start' | 'end' }> = [];
+    for (const frag of fragments) {
+      points.push({ time: frag.getStartPoint(), type: 'start' });
+      points.push({ time: frag.getStartPoint() + frag.getDuration(), type: 'end' });
+    }
+    points.sort((a, b) => a.time - b.time || (a.type === 'end' ? -1 : 1));
+
+    let currentConcurrency = 0;
+    let maxConcurrency = 0;
+    for (const point of points) {
+      currentConcurrency += point.type === 'start' ? 1 : -1;
+      maxConcurrency = Math.max(maxConcurrency, currentConcurrency);
+    }
+
+    if (maxConcurrency === 0) return;
+    const laneHeight = height / maxConcurrency;
+
+    // Assign fragments to lanes
+    const sortedFragments = [...fragments].sort((a, b) => a.getStartPoint() - b.getStartPoint());
+    const lanes: number[] = [];
+    const assignments: Array<{ fragment: IndependentFragment, lane: number }> = [];
+
+    for (const frag of sortedFragments) {
+      const start = frag.getStartPoint();
+      const end = start + frag.getDuration();
+      let lane = lanes.findIndex(laneEnd => laneEnd <= start);
+      if (lane === -1) {
+        lane = lanes.length;
+        lanes.push(end);
+      } else {
+        lanes[lane] = end;
+      }
+      assignments.push({ fragment: frag, lane });
+    }
+
+    // Clear canvas
+    ctx.clearRect(0, 0, width, height);
+
+    // Draw timeline background
+    ctx.fillStyle = inactiveColor;
+    ctx.fillRect(0, height / 2 - 1, width, 2);
+
+    // Draw fragments
+    assignments.forEach(({ fragment, lane }) => {
+      const start = fragment.getStartPoint();
+      const duration = fragment.getDuration();
+      const isActive = effectiveTime >= start && effectiveTime < start + duration;
+
+      const x = (start / totalDuration) * width;
+      const fragmentWidth = (duration / totalDuration) * width;
+      const y = lane * laneHeight;
+
+      ctx.fillStyle = isActive ? activeColor : inactiveColor;
+      ctx.fillRect(x, y + 2, fragmentWidth, laneHeight - 4);
+
+      // Fragment name
+      ctx.fillStyle = '#ffffff';
+      ctx.textAlign = 'left';
+      ctx.textBaseline = 'top';
+      ctx.font = '10px Arial';
+      ctx.fillText(fragment.getName(), x + 4, y + 4);
+    });
+
+    // Draw current time indicator
+    ctx.fillStyle = timeColor;
+    const indicatorX = (effectiveTime / totalDuration) * width;
+    ctx.beginPath();
+    ctx.moveTo(indicatorX, 0);
+    ctx.lineTo(indicatorX, height);
+    ctx.lineWidth = 2;
+    ctx.stroke();
   }
 }

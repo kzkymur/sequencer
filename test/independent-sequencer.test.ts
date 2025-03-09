@@ -9,7 +9,7 @@ describe('IndependentSequencer', () => {
   
   beforeEach(() => {
     if (sequencer && sequencer.isPlaying()) sequencer.stop()
-    sequencer = new IndependentSequencer(100, false, 1.0);
+    sequencer = new IndependentSequencer(100, 1.0, false);
     vi.clearAllMocks();
     vi.useFakeTimers();
   });

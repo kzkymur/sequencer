@@ -17,11 +17,11 @@
     "url": "https://github.com/kzkymur/sequencer/issues"
   },
   "scripts": {
-    "dev": "vite",
-    "build": "tsc && vite build",
-    "test": "vitest",
-    "test:coverage": "vitest run test --coverage",
-    "preview": "vite preview"
+    "dev": "vite --config vite.lib.config.ts",
+    "build": "tsc && vite build --config vite.lib.config.ts",
+    "test": "vitest --config vite.lib.config.ts",
+    "test:coverage": "vitest run test --coverage --config vite.lib.config.ts",
+    "preview": "vite --config vite.app.config.ts"
   },
   "devDependencies": {
     "@types/node": "^22.13.8",

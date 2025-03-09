@@ -10,7 +10,7 @@ describe('Sequencer Class', () => {
 
   beforeEach(() => {
     vi.useFakeTimers();
-    sequencer = new Sequencer(100, false);
+    sequencer = new Sequencer(100, 1.0, false);
     mockCallback.mockClear();
   });
 
