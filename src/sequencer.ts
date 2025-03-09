@@ -122,11 +122,21 @@ export class Sequencer {
    */
   isPlaying(): boolean { return this.timer.getIsPlaying(); }
 
+  /**
+   * Returns a promise that resolves when playback completes
+   * @returns {Promise<void>} Completion promise
+   * @throws {Error} If sequencer isn't playing
+   */
   waitCompleted(): Promise<void> {
     if (!this.timer.getIsPlaying()) throw new Error('Sequencer is not playing');
     return this.timer.completionPromise;
   }
 
+  /**
+   * Stops playback
+   * @param {number} [delay=0] - Delay in milliseconds before stopping
+   * @throws {Error} If delay is invalid or sequencer not playing
+   */
   stop(delay = 0): void {
     if (Number.isNaN(delay) || delay < 0) {
       throw new Error(`Invalid delay value: ${delay}. Must be non-negative number`);
@@ -167,8 +177,13 @@ export class Sequencer {
 
   /**
    * Renders sequencer visualization to canvas context
-   * @param ctx Canvas 2D rendering context
-   * @param options Visualization configuration
+   * @param {CanvasRenderingContext2D} ctx - Canvas 2D rendering context
+   * @param {Object} options - Visualization configuration
+   * @param {number} [options.width] - Canvas width
+   * @param {number} [options.height] - Canvas height
+   * @param {string} [options.activeColor] - Color for active fragments
+   * @param {string} [options.inactiveColor] - Color for inactive fragments
+   * @param {string} [options.timeIndicatorColor] - Color for time indicator
    */
   renderToCanvas(
     ctx: CanvasRenderingContext2D,

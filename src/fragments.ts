@@ -6,9 +6,10 @@ export class Fragment {
 
   /**
    * Creates a Fragment instance
-   * @param {string} name - Unique name for the fragment
-   * @param {number} duration - Duration in milliseconds
-   * @param {() => void} [callback] - Optional callback function
+   * @param {string} name - Unique name for the fragment (non-empty string)
+   * @param {number} duration - Duration in milliseconds (positive number)
+   * @param {() => void} [callback] - Optional callback function to execute during playback
+   * @throws {Error} If name is empty or duration is not positive
    */
   constructor(name: string, duration: number, callback?: () => void) {
     this.id = crypto.randomUUID();

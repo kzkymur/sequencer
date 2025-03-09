@@ -220,8 +220,9 @@ export class Timer {
   }
 
   /**
-   * Gets current elapsed time
-   * @returns Current time in milliseconds
+   * Gets current elapsed time in milliseconds
+   * @returns {number} Current playback position between 0 and totalTime
+   * @throws {Error} If timer is in invalid state
    */
   getCurrentTime(): number { return this.currentTime; }
 }
