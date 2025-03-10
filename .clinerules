@@ -85,6 +85,18 @@
     - Constructor function receives `startPoint` property in additonal, along with other parameters.
     - That all properties have each methods to change itself.
 
+- CustomFragment Object (Independent Mode)
+    - This instance bundles IndependentFragment and CustomFragment instances.
+    - This have add / remove methods for users to set bundled Fragments.
+    - Users can make some Fragments into a module easily.
+    - Constructor has these arguments
+        1. `name`
+            - requied
+        2. `startPoint` [ milisec ]
+            - required
+    - `duration` and `callback` are automaticaly defined by bundled Fragment instances.
+    - When `callback` called, the CustomFragment instance executes all active Fragment instance's callback functions by specifying active ones by the argument `current_time`.
+
 ### `sequencer.ts`
 
 - Sequencer Object (Queue Mode)
@@ -117,6 +129,7 @@
 - IndependentSequencer Object (Independent Mode)
     - This extends Sequencer Object.
     - The order of Fragment Array, `fragments`, does **NOT** matter.
+    - These functions have specific different things.
     - `insert` method
         - should be unavailable because the order of the array does NOT need.
         - always throw error.
@@ -126,7 +139,7 @@
     - `renderToCanvas(ctx: Context2D, options: object)` method
         - How to render is changed because the architecture of the Fragment Array is NOT same.
         - Specifically, fragments might run parallelly. So At first this function calculates the maximum number of fragments   at same time.
-    - Above functions are All different thing.
+    - In addition, IndependentSequencer have to be able to accept CustomFragment instance as like just a IndependentFragment instance.
 
 ### `timer.ts`
 
