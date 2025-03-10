@@ -1,5 +1,5 @@
 import { describe, expect, it, beforeEach, vi } from 'vitest';
-import { Fragment, IndependentFragment } from '../src/fragments';
+import { CustomFragment, Fragment, IndependentFragment } from '../src/fragments';
 
 describe('Fragment Class', () => {
   it('should create fragment with unique ID', () => {
@@ -87,5 +87,73 @@ describe('IndependentFragment Class', () => {
     const copy = original.copy();
     copy.getCallback()!();
     expect(mockCallback).toHaveBeenCalled();
+  });
+});
+
+describe('CustomFragment Class', () => {
+  const baseFragment = new IndependentFragment('base', 100, 0);
+  const nestedFragment = new IndependentFragment('nested', 50, 150);
+
+  beforeEach(() => {
+    vi.restoreAllMocks();
+    baseFragment.setStartPoint(0);
+    nestedFragment.setStartPoint(150);
+  });
+
+  it('should calculate duration from child fragments', () => {
+    const custom = new CustomFragment('module', 0);
+    custom.addFragment(baseFragment);
+    custom.addFragment(nestedFragment);
+    expect(custom.getDuration()).toBe(200); // 150 + 50
+  });
+
+  it('should throw when adding duplicate fragment', () => {
+    const custom = new CustomFragment('module', 0);
+    custom.addFragment(baseFragment);
+    expect(() => custom.addFragment(baseFragment))
+      .toThrow('already exists');
+  });
+
+  it('should propagate callbacks to active fragments', () => {
+    const mockBase = vi.fn();
+    const mockNested = vi.fn();
+    baseFragment.setCallback(mockBase);
+    nestedFragment.setCallback(mockNested);
+    
+    const custom = new CustomFragment('module', 0);
+    custom.addFragment(baseFragment);
+    custom.addFragment(nestedFragment);
+    
+    // Execute at 175ms (nested fragment active)
+    custom.getCallback()(175);
+    
+    expect(mockBase).not.toHaveBeenCalled();
+    expect(mockNested).toHaveBeenCalled();
+  });
+
+  it('should handle nested custom fragments', () => {
+    const mockCallback = vi.fn();
+    baseFragment.setCallback(mockCallback);
+    
+    const innerCustom = new CustomFragment('inner', 50);
+    innerCustom.addFragment(baseFragment);
+    
+    const outerCustom = new CustomFragment('outer', 0);
+    outerCustom.addFragment(innerCustom);
+    
+    // Inner fragment active between 50-150ms (75ms in outer = 25ms in inner)
+    outerCustom.getCallback()(75);
+    expect(mockCallback).toHaveBeenCalled();
+  });
+
+  it('should create independent copies with new IDs', () => {
+    const custom = new CustomFragment('original', 0);
+    custom.addFragment(baseFragment);
+    
+    const copy = custom.copy();
+    
+    expect(copy).toBeInstanceOf(CustomFragment);
+    expect(copy.getId()).not.toBe(custom.getId());
+    expect(copy.getFragments()[0].getId()).not.toBe(baseFragment.getId());
   });
 });

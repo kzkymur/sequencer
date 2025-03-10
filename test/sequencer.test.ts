@@ -63,10 +63,10 @@ describe('Sequencer Class', () => {
       const frag2 = new Fragment('B', 200);
       
       sequencer.insert(0, frag1);
-      // expect(sequencer.getTotalTime()).toBe(100);
+      expect(sequencer.getFragments().length).toBe(1);
       
-      // sequencer.insert(0, frag2);
-      // expect(sequencer.getTotalTime()).toBe(300);
+      sequencer.insert(0, frag2);
+      expect(sequencer.getFragments().length).toBe(2);
     });
   });
 
