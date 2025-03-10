@@ -173,14 +173,14 @@ export class CustomFragment extends IndependentFragment {
    */
   private executeCallbacks(currentTime: number): void {
     this.fragments.forEach(fragment => {
-      const start = fragment.getStartPoint();
+      const start = this.getStartPoint() + fragment.getStartPoint();
       const end = start + fragment.getDuration();
       
       if (currentTime >= start && currentTime <= end) {
         if (fragment instanceof CustomFragment) {
-          fragment.executeCallbacks(currentTime - start);
+          fragment.executeCallbacks(currentTime - this.getStartPoint());
         } else if (fragment.getCallback()) {
-          fragment.getCallback()!(currentTime);
+          fragment.getCallback()!(currentTime - this.getStartPoint());
         }
       }
     });

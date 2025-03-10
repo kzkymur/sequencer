@@ -100,18 +100,10 @@ describe('IndependentSequencer', () => {
       expect(mockCallback1).not.toHaveBeenCalled();
     });
   });
-
-  describe('IndependentSequencer Class', () => {
-    let indepSequencer: IndependentSequencer;
   
-    beforeEach(() => {
-      indepSequencer = new IndependentSequencer(100, 1.0, false);
-    });
-  
-    it('should throw when trying to insert fragments', () => {
-      const frag = new IndependentFragment('Test', 100, 0);
-      expect(() => indepSequencer.insert(0, frag))
-        .toThrow('Insert operation not supported');
-    });
+  it('should throw when trying to insert fragments', () => {
+    const frag = new IndependentFragment('Test', 100, 0);
+    expect(() => sequencer.insert(0, frag))
+      .toThrow('Insert operation not supported');
   });
 });
