@@ -185,7 +185,7 @@ export class Sequencer {
     let accumulated = 0;
     for (const fragment of this.fragments) {
       if (currentTime < accumulated + fragment.getDuration()) {
-        fragment.getCallback()?.();
+        fragment.getCallback()?.(currentTime);
         return;
       }
       accumulated += fragment.getDuration();
@@ -296,7 +296,7 @@ export class IndependentSequencer extends Sequencer {
         const end = start + fragment.getDuration();
         
         if (currentTime >= start && currentTime < end) {
-          fragment.getCallback()?.();
+          fragment.getCallback()?.(currentTime);
         }
       }
     }

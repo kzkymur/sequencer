@@ -217,7 +217,7 @@ export class CustomFragment extends IndependentFragment {
 
   /**
    * Gets a copy of all fragments in the CustomFragment
-   * @returns {Fragment[]} Copy of fragments array
+   * @returns {IndependentFragment[]} Copy of fragments array
    */
-  getFragments(): Fragment[] { return [...this.fragments]; }
+  getFragments(): IndependentFragment[] { return [...this.fragments]; }
 }

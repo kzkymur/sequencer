@@ -1,7 +1,7 @@
-import { IndependentSequencer, IndependentFragment } from '../../src/main';
+import { IndependentSequencer, IndependentFragment, CustomFragment } from '../../src/main';
 
 let sequencer: IndependentSequencer = new IndependentSequencer(100, 1.0, false);
-let fragments: IndependentFragment[] = [];
+let fragments: Array<IndependentFragment | CustomFragment> = [];
 
 // Configuration handlers
 document.getElementById('pitch')!.addEventListener('change', (e: Event) => {
@@ -20,6 +20,7 @@ document.getElementById('loop')!.addEventListener('change', (e: Event) => {
 });
 
 // Fragment form handler
+// Handle Independent Fragment creation
 document.getElementById('fragment-form')!.addEventListener('submit', (e: SubmitEvent) => {
   e.preventDefault();
   const nameInput = document.getElementById('frag-name') as HTMLInputElement;
@@ -42,6 +43,72 @@ document.getElementById('fragment-form')!.addEventListener('submit', (e: SubmitE
   updateFragmentList();
   (e.target as HTMLFormElement).reset();
 });
+
+// Handle Custom Fragment creation
+document.getElementById('custom-fragment-form')!.addEventListener('submit', (e: SubmitEvent) => {
+  e.preventDefault();
+  const nameInput = document.getElementById('custom-frag-name') as HTMLInputElement;
+  const startInput = document.getElementById('custom-frag-start') as HTMLInputElement;
+  
+  const name = nameInput.value;
+  const startPoint = parseInt(startInput.value);
+
+  const customFragment = new CustomFragment(name, startPoint);
+
+  // Add selected fragments
+  const checkboxes = document.querySelectorAll<HTMLInputElement>('#fragment-selection input:checked');
+  checkboxes.forEach(checkbox => {
+    const fragment = fragments.find(frag => frag.getId() === checkbox.value);
+    if (fragment) {
+      customFragment.addFragment(fragment);
+    }
+  });
+
+  fragments.push(customFragment);
+  sequencer.push(customFragment);
+  updateFragmentList();
+  (e.target as HTMLFormElement).reset();
+});
+
+// Populate fragment selection checkboxes
+function populateFragmentSelection(): void {
+  const container = document.getElementById('fragment-selection')!;
+  container.innerHTML = fragments.map(frag => `
+    <label style="display: block; margin: 5px 0;">
+      <input type="checkbox" value="${frag.getId()}">
+      ${frag.getName()} (${frag.constructor.name})
+    </label>
+  `).join('');
+}
+
+// Update fragment list to show compositions
+function updateFragmentList(): void {
+  const list = document.getElementById('fragment-list')!;
+  list.innerHTML = fragments.map(frag => {
+    if (frag instanceof CustomFragment) {
+      return `
+        <li class="fragment-item" style="background: #fff3e0;">
+          <div>
+            <strong>${frag.getName()}</strong> (Custom, Start: ${frag.getStartPoint()}ms)
+            <div style="margin-left: 20px; color: #666;">
+              ${frag.getFragments().map(subFrag =>
+                `• ${subFrag.getName()} (${subFrag.getStartPoint()}ms-${subFrag.getStartPoint() + subFrag.getDuration()}ms)`
+              ).join('<br>')}
+            </div>
+          </div>
+          <button onclick="removeFragment('${frag.getId()}')">Remove</button>
+        </li>
+      `;
+    }
+    return `
+      <li class="fragment-item">
+        <span>${frag.getName()} (Start: ${frag.getStartPoint()}ms, Duration: ${frag.getDuration()}ms)</span>
+        <button onclick="removeFragment('${frag.getId()}')">Remove</button>
+      </li>
+    `;
+  }).join('');
+  populateFragmentSelection();
+}
 
 // Playback controls
 const replayBtn = document.getElementById('replay-btn') as HTMLButtonElement;
@@ -91,15 +158,15 @@ stopBtn.addEventListener('click', () => {
   animateProgress(); // Force re-render
 });
 
-function updateFragmentList(): void {
-  const list = document.getElementById('fragment-list')!;
-  list.innerHTML = fragments.map(frag => `
-    <li class="fragment-item">
-      <span>${frag.getName()} (Start: ${frag.getStartPoint()}ms, Duration: ${frag.getDuration()}ms)</span>
-      <button onclick="removeFragment('${frag.getId()}')">Remove</button>
-    </li>
-  `).join('');
-}
+// function updateFragmentList(): void {
+//   const list = document.getElementById('fragment-list')!;
+//   list.innerHTML = fragments.map(frag => `
+//     <li class="fragment-item">
+//       <span>${frag.getName()} (Start: ${frag.getStartPoint()}ms, Duration: ${frag.getDuration()}ms)</span>
+//       <button onclick="removeFragment('${frag.getId()}')">Remove</button>
+//     </li>
+//   `).join('');
+// }
 
 const canvas = document.getElementById('visualization-canvas') as HTMLCanvasElement;
 const ctx = canvas.getContext('2d')!;

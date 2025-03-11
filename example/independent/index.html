@@ -95,21 +95,46 @@
 
     <div class="fragment-controls">
       <h2>Fragment Management</h2>
-      <form id="fragment-form">
-        <div class="input-group">
-          <label for="frag-name">Fragment Name:</label>
-          <input type="text" id="frag-name" required>
-        </div>
-        <div class="input-group">
-          <label for="frag-duration">Duration (ms):</label>
-          <input type="number" id="frag-duration" required min="100" step="100">
-        </div>
-        <div class="input-group">
-          <label for="frag-start">Start Point (ms):</label>
-          <input type="number" id="frag-start" required min="0" step="100">
-        </div>
-        <button type="submit">Add Fragment</button>
-      </form>
+      
+      <div class="fragment-type-section">
+        <h3>Independent Fragments</h3>
+        <form id="fragment-form">
+          <div class="input-group">
+            <label for="frag-name">Fragment Name:</label>
+            <input type="text" id="frag-name" required>
+          </div>
+          <div class="input-group">
+            <label for="frag-duration">Duration (ms):</label>
+            <input type="number" id="frag-duration" required min="100" step="100">
+          </div>
+          <div class="input-group">
+            <label for="frag-start">Start Point (ms):</label>
+            <input type="number" id="frag-start" required min="0" step="100">
+          </div>
+          <button type="submit">Add Independent Fragment</button>
+        </form>
+      </div>
+
+      <div class="fragment-type-section">
+        <h3>Custom Fragments</h3>
+        <form id="custom-fragment-form">
+          <div class="input-group">
+            <label for="custom-frag-name">Custom Fragment Name:</label>
+            <input type="text" id="custom-frag-name" required>
+          </div>
+          <div class="input-group">
+            <label for="custom-frag-start">Start Point (ms):</label>
+            <input type="number" id="custom-frag-start" required min="0" step="100">
+          </div>
+          <div class="input-group">
+            <label>Include Fragments:</label>
+            <div id="fragment-selection" style="max-height: 200px; overflow-y: auto; border: 1px solid #ddd; padding: 10px; margin: 5px 0;">
+              <!-- Dynamically populated -->
+            </div>
+          </div>
+          <button type="submit">Create Custom Fragment</button>
+        </form>
+      </div>
       
       <h3>Fragments</h3>
       <ul id="fragment-list"></ul>
