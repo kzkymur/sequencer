@@ -1,143 +1,113 @@
-# Sequencer Library
+# Sequencer - Precision Timeline Control Library
 
-A TypeScript library for precise timeline sequencing with queue and independent modes.
+[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
+
+A TypeScript library for precise sequencing and scheduling of timeline-based operations. Provides two distinct modes for different sequencing needs.
+
+## Features
+
+- 🕒 Millisecond-precision timing control
+- 🔁 Loopable sequences with adjustable speed
+- 🧩 Fragment-based architecture
+- 🎛️ Queue Mode (linear execution) and Independent Mode (parallel execution)
+- 🖥️ Canvas-based visualization tools
+- 🧪 Full test coverage with Vitest
 
 ## Installation
 
 ```bash
-npm install @roo/sequencer
+npm install @kzkymur/sequencer
 ```
-
-## Features
-
-- 🎛️ Two sequencing modes: Queue and Independent
-- ⏱️ Precise millisecond-level control
-- 🔁 Loop support
-- 🛠️ Runtime editing of sequences
-- 📈 Speed control (0.1x-10x)
 
 ## Usage
 
-### Queue Mode Example
-
+### Queue Mode (Linear Sequencing)
 ```typescript
-import { Sequencer, Fragment } from '@roo/sequencer';
+import { Sequencer, Fragment } from '@kzkymur/sequencer';
 
 // Create fragments
-const intro = new Fragment('Intro', 2000);
-const main = new Fragment('Main', 5000, () => console.log('Main action!'));
-const outro = new Fragment('Outro', 3000);
+const fragment1 = new Fragment('Intro', 1000, () => console.log('Start!'));
+const fragment2 = new Fragment('Main', 2000, () => console.log('Running'));
 
 // Create sequencer
-const queueSequencer = new Sequencer(100, 1.0, false);
-queueSequencer.push(intro);
-queueSequencer.push(main);
-queueSequencer.push(outro);
+const sequencer = new Sequencer({
+  pitch: 100,
+  speed: 1.0,
+  loop: false
+});
+
+// Add fragments
+sequencer.push(fragment1);
+sequencer.push(fragment2);
 
 // Control playback
-queueSequencer.play();
-queueSequencer.stop(2000); // Stop after 2 seconds
+sequencer.play();
 ```
 
-### Independent Mode Example
-
+### Independent Mode (Parallel Sequencing)
 ```typescript
-import { IndependentSequencer, IndependentFragment } from '@roo/sequencer';
+import { IndependentSequencer, IndependentFragment } from '@kzkymur/sequencer';
 
-// Create overlapping fragments
-const bgMusic = new IndependentFragment('Music', 10000, 0);
-const effect = new IndependentFragment('Effect', 500, 3500);
+// Create parallel fragments
+const fragmentA = new IndependentFragment('SFX', 500, 0, () => playSound());
+const fragmentB = new IndependentFragment('Animation', 1000, 250, () => updateFrame());
 
 // Create independent sequencer
-const indepSequencer = new IndependentSequencer(50, 1.0, true);
-indepSequencer.push(bgMusic);
-indepSequencer.push(effect);
+const sequencer = new IndependentSequencer({
+  pitch: 50,
+  speed: 1.0,
+  loop: true
+});
 
-// Play indefinitely
-indepSequencer.play();
+// Add fragments (order irrelevant)
+sequencer.push(fragmentA);
+sequencer.push(fragmentB);
+
+// Start parallel execution
+sequencer.play();
 ```
 
-## API Reference
+## API Documentation
 
-### Fragment Types
+### Core Classes
 
-| Class                | Properties              | Description                     |
-|----------------------|-------------------------|---------------------------------|
-| `Fragment`           | name, duration, callback | Base queue fragment            |
-| `IndependentFragment`| + startPoint            | Positionable independent fragment |
+#### `Fragment`
+- `constructor(name: string, duration: number, callback?: Function)`
+- Methods: `copy()`, `updateDuration()`, `updateCallback()`
 
-### Sequencer Classes
+#### `IndependentFragment` (extends Fragment)
+- `constructor(name: string, duration: number, startPoint: number, callback?: Function)`
+- Additional methods: `updateStartPoint()`
 
-#### Queue Sequencer
-```typescript
-class Sequencer {
-  constructor(pitch: number, speed: number, loop: boolean);
-  push(fragment: Fragment): void;
-  remove(fragment: Fragment): void;
-  play(delay?: number): void;
-  stop(delay?: number): void;
-  replay(delay?: number): void;
-}
-```
+#### `Sequencer`
+- `constructor(config: { pitch: number, speed: number, loop: boolean })`
+- Methods: `push()`, `remove()`, `insert()`, `play()`, `stop()`, `replay()`
 
-#### Independent Sequencer
-```typescript
-class IndependentSequencer extends Sequencer {
-  // Inherits base methods with different execution logic
-}
-```
-
-### Timer Control
-```typescript
-interface Timer {
-  setPitch(ms: number): void;
-  setSpeed(multiplier: number): void;
-  toggleLoop(enable: boolean): void;
-}
-```
-
-## Architecture Overview
-
-```
-src/
-├── fragments.ts     # Fragment base classes
-├── sequencer.ts     # Sequencer implementations
-├── timer.ts         # Precision timing control
-├── ticker.ts        # Web Worker-based tick generator
-└── const.ts         # Event constants
-```
-
-## Testing
-
-Run test suite with coverage:
-```bash
-npm run test:coverage
-```
-
-Requirements:
-- 90%+ line coverage
-- All public API methods tested
-- Edge case validation
+#### `IndependentSequencer` (extends Sequencer)
+- Modified execution logic for parallel fragments
+- Disabled `insert()` method
 
 ## Examples
 
-Explore sample implementations in:
-- `index.html` - Browser demo
-- `example/src/index.ts` - TypeScript usage examples
+Explore complete implementation examples:
+- Queue Mode: `/example/queue/index.ts`
+- Independent Mode: `/example/independent/index.ts`
+
+## Testing
+
+```bash
+npm test              # Run test suite
+npm run test:coverage # Generate coverage report
+```
 
 ## Contributing
 
-1. Clone repository
-2. Install dependencies: `npm install`
-3. Implement features/fixes
-4. Update tests
-5. Verify quality:
-```bash
-npm run lint
-npm run build
-npm run test:coverage
-```
+1. Fork the repository
+2. Create feature branch (`git checkout -b feature/amazing-feature`)
+3. Commit changes (`git commit -m 'Add amazing feature'`)
+4. Push to branch (`git push origin feature/amazing-feature`)
+5. Open Pull Request
 
 ## License
 
-MIT © 2025 Roo Veterinary Inc.
+Distributed under the MIT License. See `LICENSE` for more information.

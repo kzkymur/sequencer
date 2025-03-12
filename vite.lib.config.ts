@@ -11,12 +11,6 @@ export default defineConfig({
       fileName: "seauencer-lib", // 生成するファイルのファイル名を指定します。
       formats: ["es", "umd"], // 生成するモジュール形式を配列で指定します。デフォルトで['es', 'umd'] なのでこの場合はなくても大丈夫です。
     },
-    rollupOptions: {
-      input: {
-        queue: resolve(__dirname, 'example/queue.html'),
-        independent: resolve(__dirname, 'example/independent.html'),
-      },
-    },
   },
   plugins: [],
   test: {
