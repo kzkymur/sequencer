@@ -5,6 +5,33 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Sequencer Demo (Independent Mode)</title>
     <style>
+      /* Toggle styles */
+      .toggle-header {
+        cursor: pointer;
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        padding: 8px 0;
+        user-select: none;
+      }
+      .toggle-header::before {
+        content: '▶';
+        transition: transform 0.2s ease;
+        font-size: 0.8em;
+        color: #666;
+      }
+      .toggle-header.expanded::before {
+        transform: rotate(90deg);
+      }
+      .collapsible {
+        max-height: 0;
+        overflow: hidden;
+        transition: max-height 0.3s ease-out;
+      }
+      .collapsible-content {
+        padding: 15px 0;
+      }
+    
       body {
         font-family: Arial, sans-serif;
         max-width: 800px;
@@ -127,24 +154,30 @@
       </div>
 
       <div class="fragment-type-section">
-        <h3>Custom Fragments</h3>
-        <form id="custom-fragment-form">
-          <div class="input-group">
-            <label for="custom-frag-name">Custom Fragment Name:</label>
-            <input type="text" id="custom-frag-name" required>
+        <div class="toggle-header" id="custom-frag-toggle">
+          <span>Custom Fragments</span>
+        </div>
+        <div class="collapsible" id="custom-frag-section">
+          <div class="collapsible-content">
+            <form id="custom-fragment-form">
+              <div class="input-group">
+                <label for="custom-frag-name">Custom Fragment Name:</label>
+                <input type="text" id="custom-frag-name" required>
+              </div>
+              <div class="input-group">
+                <label for="custom-frag-start">Start Point (ms):</label>
+                <input type="number" id="custom-frag-start" required min="0" step="100">
+              </div>
+              <div class="input-group">
+                <label>Include Fragments:</label>
+                <div id="fragment-selection" style="max-height: 200px; overflow-y: auto; border: 1px solid #ddd; padding: 10px; margin: 5px 0;">
+                  <!-- Dynamically populated -->
+                </div>
+              </div>
+              <button type="submit">Create Custom Fragment</button>
+            </form>
           </div>
-          <div class="input-group">
-            <label for="custom-frag-start">Start Point (ms):</label>
-            <input type="number" id="custom-frag-start" required min="0" step="100">
-          </div>
-          <div class="input-group">
-            <label>Include Fragments:</label>
-            <div id="fragment-selection" style="max-height: 200px; overflow-y: auto; border: 1px solid #ddd; padding: 10px; margin: 5px 0;">
-              <!-- Dynamically populated -->
-            </div>
-          </div>
-          <button type="submit">Create Custom Fragment</button>
-        </form>
+        </div>
       </div>
       
       <h3>Fragments</h3>
@@ -163,5 +196,20 @@
     </div>
 
     <script type="module" src="/independent/index.ts"></script>
+    <script>
+      // Add toggle functionality
+      const toggleHeader = document.getElementById('custom-frag-toggle');
+      const collapsibleSection = document.getElementById('custom-frag-section');
+      
+      toggleHeader.addEventListener('click', () => {
+        const isExpanded = toggleHeader.classList.toggle('expanded');
+        collapsibleSection.style.maxHeight = isExpanded
+          ? `${collapsibleSection.scrollHeight}px`
+          : '0';
+      });
+
+      // Initialize collapsed state
+      collapsibleSection.style.maxHeight = '0';
+    </script>
   </body>
 </html>
