@@ -29,6 +29,14 @@
         width: 200px;
         padding: 5px;
       }
+      .button-group {
+        display: flex;
+        gap: 10px;
+        margin-top: 15px;
+      }
+      .button-group button {
+        flex: 1;
+      }
       button {
         background: #007bff;
         color: white;
@@ -111,7 +119,10 @@
             <label for="frag-start">Start Point (ms):</label>
             <input type="number" id="frag-start" required min="0" step="100">
           </div>
-          <button type="submit">Add Independent Fragment</button>
+          <div class="button-group">
+            <button type="button" id="add-to-sequencer-btn" style="background-color: #28a745">Add to Sequencer</button>
+            <button type="button" id="add-to-pool-btn" style="background-color: #17a2b8">Add to CustomFragment Pool</button>
+          </div>
         </form>
       </div>
 

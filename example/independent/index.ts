@@ -19,30 +19,87 @@ document.getElementById('loop')!.addEventListener('change', (e: Event) => {
   sequencer.setLoopFlag(target.checked);
 });
 
-// Fragment form handler
-// Handle Independent Fragment creation
-document.getElementById('fragment-form')!.addEventListener('submit', (e: SubmitEvent) => {
-  e.preventDefault();
+// Handle Add to Sequencer button
+document.getElementById('add-to-sequencer-btn')!.addEventListener('click', () => {
   const nameInput = document.getElementById('frag-name') as HTMLInputElement;
   const durationInput = document.getElementById('frag-duration') as HTMLInputElement;
   const startInput = document.getElementById('frag-start') as HTMLInputElement;
-  
-  const name = nameInput.value;
-  const duration = parseInt(durationInput.value);
-  const startPoint = parseInt(startInput.value);
 
-  const fragment = new IndependentFragment(
+  if (!validateFragmentInputs(nameInput, durationInput, startInput)) return;
+
+  const fragment = createIndependentFragment(
+    nameInput.value,
+    parseInt(durationInput.value),
+    parseInt(startInput.value)
+  );
+
+  sequencer.push(fragment);
+  fragments.push(fragment);
+  updateFragmentList();
+  clearFormInputs(nameInput, durationInput, startInput);
+});
+
+// Handle Add to Pool button
+document.getElementById('add-to-pool-btn')!.addEventListener('click', () => {
+  const nameInput = document.getElementById('frag-name') as HTMLInputElement;
+  const durationInput = document.getElementById('frag-duration') as HTMLInputElement;
+  const startInput = document.getElementById('frag-start') as HTMLInputElement;
+
+  if (!validateFragmentInputs(nameInput, durationInput, startInput)) return;
+
+  const fragment = createIndependentFragment(
+    nameInput.value,
+    parseInt(durationInput.value),
+    parseInt(startInput.value)
+  );
+
+  fragments.push(fragment);
+  updateFragmentList();
+  clearFormInputs(nameInput, durationInput, startInput);
+});
+
+function validateFragmentInputs(
+  nameInput: HTMLInputElement,
+  durationInput: HTMLInputElement,
+  startInput: HTMLInputElement
+): boolean {
+  if (!nameInput.value) {
+    alert('Please enter a fragment name');
+    return false;
+  }
+  if (!durationInput.value || parseInt(durationInput.value) <= 0) {
+    alert('Please enter a valid duration (greater than 0)');
+    return false;
+  }
+  if (!startInput.value || parseInt(startInput.value) < 0) {
+    alert('Please enter a valid start point (0 or greater)');
+    return false;
+  }
+  return true;
+}
+
+function createIndependentFragment(
+  name: string,
+  duration: number,
+  startPoint: number
+): IndependentFragment {
+  return new IndependentFragment(
     name,
     duration,
     startPoint,
     () => console.log(`Executing fragment: ${name}`)
   );
-  
-  fragments.push(fragment);
-  sequencer.push(fragment);
-  updateFragmentList();
-  (e.target as HTMLFormElement).reset();
-});
+}
+
+function clearFormInputs(
+  nameInput: HTMLInputElement,
+  durationInput: HTMLInputElement,
+  startInput: HTMLInputElement
+): void {
+  nameInput.value = '';
+  durationInput.value = '';
+  startInput.value = '';
+}
 
 // Handle Custom Fragment creation
 document.getElementById('custom-fragment-form')!.addEventListener('submit', (e: SubmitEvent) => {
