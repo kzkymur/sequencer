@@ -1,10 +1,14 @@
 import { Fragment, IndependentFragment } from './fragments';
 import { Timer } from './timer';
 import { TIMER_UPDATE_EVENT } from './const';
+import type { BaseSequencerRenderer, RenderOptions } from './renderers/base-renderer';
+import { QueueRenderer } from './renderers/queue-renderer';
+import { IndependentRenderer } from './renderers/independent-renderer';
 
 export class Sequencer {
   protected fragments: Fragment[] = [];
   public timer: Timer;
+  protected renderer: BaseSequencerRenderer = new QueueRenderer()
 
   /**
    * Creates a Sequencer instance
@@ -195,73 +199,22 @@ export class Sequencer {
   /**
    * Renders sequencer visualization to canvas context
    * @param {CanvasRenderingContext2D} ctx - Canvas 2D rendering context
-   * @param {Object} options - Visualization configuration
+   * @param {RenderOptions} options - Visualization configuration
    * @param {number} [options.width] - Canvas width
    * @param {number} [options.height] - Canvas height
    * @param {string} [options.activeColor] - Color for active fragments
    * @param {string} [options.inactiveColor] - Color for inactive fragments
    * @param {string} [options.timeIndicatorColor] - Color for time indicator
    */
-  renderToCanvas(
-    ctx: CanvasRenderingContext2D,
-    options: {
-      width?: number;
-      height?: number;
-      activeColor?: string;
-      inactiveColor?: string;
-      timeIndicatorColor?: string;
-    }
-  ): void {
+  renderToCanvas(ctx: CanvasRenderingContext2D, options: RenderOptions): void {
     const totalDuration = this.fragments.reduce((sum, f) => sum + f.getDuration(), 0);
-    const currentTime = this.timer.getCurrentTime() % totalDuration;
-    const width = options.width || ctx.canvas.width;
-    const height = options.height || ctx.canvas.height;
-    const activeColor = options.activeColor || '#ff4757';
-    const inactiveColor = options.inactiveColor || '#2ed573';
-    const timeColor = options.timeIndicatorColor || '#ffa502';
-
-    // Clear canvas
-    ctx.clearRect(0, 0, width, height);
-
-    // Draw timeline background
-    ctx.fillStyle = inactiveColor;
-    ctx.fillRect(0, height / 2 - 2, width, 4);
-
-    // Draw fragments
-    let accumulated = 0;
-    for (const fragment of this.fragments) {
-      const fragmentWidth = (fragment.getDuration() / totalDuration) * width;
-      const isActive = currentTime >= accumulated &&
-        currentTime <= accumulated + fragment.getDuration();
-
-      ctx.fillStyle = isActive ? activeColor : inactiveColor;
-      ctx.fillRect(
-        (accumulated / totalDuration) * width,
-        height / 2 - 15,
-        fragmentWidth,
-        30
-      );
-
-      // Fragment name
-      ctx.fillStyle = '#ffffff';
-      ctx.textAlign = 'center';
-      ctx.textBaseline = 'middle';
-      ctx.font = '12px Arial';
-      ctx.fillText(
-        fragment.getName(),
-        (accumulated / totalDuration) * width + fragmentWidth / 2,
-        height / 2
-      );
-
-      accumulated += fragment.getDuration();
-    }
-
-    // Draw current time indicator
-    ctx.fillStyle = timeColor;
-    const indicatorX = (currentTime / totalDuration) * width;
-    ctx.beginPath();
-    ctx.arc(indicatorX, height / 2, height / 2, 0, Math.PI * 2);
-    ctx.fill();
+    this.renderer.render(
+      ctx,
+      this.fragments,
+      totalDuration,
+      this.timer.getCurrentTime(),
+      options
+    );
   }
 }
 
@@ -269,6 +222,8 @@ export class Sequencer {
  * IndependentSequencer handles fragments with individual start points
  */
 export class IndependentSequencer extends Sequencer {
+  protected renderer: BaseSequencerRenderer = new IndependentRenderer();
+
   /**
    * @override Disabled for IndependentSequencer
    * @throws {Error} Always throws since insertion order is irrelevant
@@ -321,105 +276,18 @@ export class IndependentSequencer extends Sequencer {
 
   /**
    * Renders sequencer visualization to canvas context for Independent Mode
-   * @param ctx - Canvas 2D rendering context
-   * @param options - Visualization configuration
+   * @param {CanvasRenderingContext2D} ctx - Canvas 2D rendering context
+   * @param {RenderOptions} options - Visualization configuration
+   * @param {number} [options.width] - Canvas width
+   * @param {number} [options.height] - Canvas height
+   * @param {string} [options.activeColor] - Color for active fragments
+   * @param {string} [options.inactiveColor] - Color for inactive fragments
+   * @param {string} [options.timeIndicatorColor] - Color for time indicator
    */
   renderToCanvas(
     ctx: CanvasRenderingContext2D,
-    options: {
-      width?: number;
-      height?: number;
-      activeColor?: string;
-      inactiveColor?: string;
-      timeIndicatorColor?: string;
-    }
+    options: RenderOptions
   ): void {
-    const fragments = this.getFragments().filter((f): f is IndependentFragment => f instanceof IndependentFragment);
-    if (fragments.length === 0) return;
-
-    const totalDuration = this.getTotalTime();
-    if (totalDuration === 0) return;
-
-    const currentTime = this.timer.getCurrentTime();
-    const effectiveTime = this.isLooping() ? currentTime % totalDuration : currentTime;
-
-    const width = options.width || ctx.canvas.width;
-    const height = options.height || ctx.canvas.height;
-    const activeColor = options.activeColor || '#ff4757';
-    const inactiveColor = options.inactiveColor || '#2ed573';
-    const timeColor = options.timeIndicatorColor || '#ffa502';
-
-    // Calculate maximum concurrent fragments
-    const points: Array<{ time: number, type: 'start' | 'end' }> = [];
-    for (const frag of fragments) {
-      points.push({ time: frag.getStartPoint(), type: 'start' });
-      points.push({ time: frag.getStartPoint() + frag.getDuration(), type: 'end' });
-    }
-    points.sort((a, b) => a.time - b.time || (a.type === 'end' ? -1 : 1));
-
-    let currentConcurrency = 0;
-    let maxConcurrency = 0;
-    for (const point of points) {
-      currentConcurrency += point.type === 'start' ? 1 : -1;
-      maxConcurrency = Math.max(maxConcurrency, currentConcurrency);
-    }
-
-    if (maxConcurrency === 0) return;
-    const laneHeight = height / maxConcurrency;
-
-    // Assign fragments to lanes
-    const sortedFragments = [...fragments].sort((a, b) => a.getStartPoint() - b.getStartPoint());
-    const lanes: number[] = [];
-    const assignments: Array<{ fragment: IndependentFragment, lane: number }> = [];
-
-    for (const frag of sortedFragments) {
-      const start = frag.getStartPoint();
-      const end = start + frag.getDuration();
-      let lane = lanes.findIndex(laneEnd => laneEnd <= start);
-      if (lane === -1) {
-        lane = lanes.length;
-        lanes.push(end);
-      } else {
-        lanes[lane] = end;
-      }
-      assignments.push({ fragment: frag, lane });
-    }
-
-    // Clear canvas
-    ctx.clearRect(0, 0, width, height);
-
-    // Draw timeline background
-    ctx.fillStyle = inactiveColor;
-    ctx.fillRect(0, height / 2 - 1, width, 2);
-
-    // Draw fragments
-    assignments.forEach(({ fragment, lane }) => {
-      const start = fragment.getStartPoint();
-      const duration = fragment.getDuration();
-      const isActive = effectiveTime >= start && effectiveTime < start + duration;
-
-      const x = (start / totalDuration) * width;
-      const fragmentWidth = (duration / totalDuration) * width;
-      const y = lane * laneHeight;
-
-      ctx.fillStyle = isActive ? activeColor : inactiveColor;
-      ctx.fillRect(x, y + 2, fragmentWidth, laneHeight - 4);
-
-      // Fragment name
-      ctx.fillStyle = '#ffffff';
-      ctx.textAlign = 'left';
-      ctx.textBaseline = 'top';
-      ctx.font = '10px Arial';
-      ctx.fillText(fragment.getName(), x + 4, y + 4);
-    });
-
-    // Draw current time indicator
-    ctx.fillStyle = timeColor;
-    const indicatorX = (effectiveTime / totalDuration) * width;
-    ctx.beginPath();
-    ctx.moveTo(indicatorX, 0);
-    ctx.lineTo(indicatorX, height);
-    ctx.lineWidth = 2;
-    ctx.stroke();
+    this.renderer.render(ctx, this.fragments, this.getTotalTime(), this.getCurrentTime(), options);
   }
 }
