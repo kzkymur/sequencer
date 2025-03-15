@@ -23,7 +23,8 @@
     "lint": "tsc --noEmit",
     "test": "vitest --config vite.lib.config.ts",
     "test:coverage": "vitest run test --coverage --config vite.lib.config.ts",
-    "preview": "vite --config vite.app.config.ts"
+    "dev:example": "vite --config vite.app.config.ts",
+    "build:example": "vite build --config vite.app.config.ts"
   },
   "devDependencies": {
     "@types/node": "^22.13.8",

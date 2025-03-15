@@ -1,0 +1,34 @@
+name: CI
+
+on:
+  push:
+    branches: [ "main" ]
+  workflow_dispatch:
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Install asdf & tools
+        uses: asdf-vm/actions/install@v4
+      - run: npm install && npm run build:example
+      - uses: actions/upload-artifact@v3
+        with:
+          name: example
+          path: exapmle/dist
+      - uses: actions/upload-pages-artifact@v1
+        with:
+          path: exapmle/dist
+          
+  deploy:
+    needs: build
+    runs-on: ubuntu-latest 
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    permissions:
+      pages: write
+      id-token: write
+    steps:
+      - uses: actions/deploy-pages@v1
+        id: deployment
