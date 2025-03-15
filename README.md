@@ -4,6 +4,8 @@
 [![npm version](https://img.shields.io/npm/v/@kzkymur/sequencer)](https://www.npmjs.com/package/@kzkymur/sequencer)
 [![Test Coverage](https://img.shields.io/badge/coverage-95%25-brightgreen)](https://github.com/kzkymur/sequencer)
 
+[**Demo Page is Here**](https://kzkymur.github.io/sequencer/example/)
+
 A professional-grade TypeScript library for precise sequencing and timeline orchestration. Perfect for animations, audio sequencing, robotic control, and any time-based operations requiring millisecond precision.
 
 ```mermaid
