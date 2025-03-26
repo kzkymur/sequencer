@@ -10,6 +10,8 @@ jobs:
   build:
     runs-on: ubuntu-latest
     steps:
+      - name: Checkout repository
+        uses: actions/checkout@v2
       - name: Setup Tools
         uses: asdf-vm/actions/install@v3
       - run: npm install && npm run build:example
