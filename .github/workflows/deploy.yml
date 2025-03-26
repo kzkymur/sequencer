@@ -11,7 +11,7 @@ jobs:
     runs-on: ubuntu-22.04
     steps:
       - name: Install asdf & tools
-        uses: asdf-vm/actions/install@v4
+        uses: asdf-vm/actions/install@v3
       - run: npm install && npm run build:example
       - uses: actions/upload-artifact@v3
         with:
