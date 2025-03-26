@@ -13,10 +13,10 @@ jobs:
       - uses: actions/upload-artifact@v3
         with:
           name: example
-          path: exapmle/dist
+          path: example/dist
       - uses: actions/upload-pages-artifact@v1
         with:
-          path: exapmle/dist
+          path: example/dist
           
   deploy:
     needs: build
