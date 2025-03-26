@@ -13,7 +13,7 @@ jobs:
       - name: Setup Tools
         uses: asdf-vm/actions/install@v3
       - run: npm install && npm run build:example
-      - uses: actions/upload-pages-artifact@v2
+      - uses: actions/upload-pages-artifact@v3
         with:
           path: example/dist
           
