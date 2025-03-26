@@ -13,7 +13,7 @@ export default defineConfig({
         independent: resolve(__dirname, 'example/independent/index.html'),
       }
     },
-    outDir: "example-dist"
+    outDir: "example/dist"
   },
   server: {
     port: 8080
