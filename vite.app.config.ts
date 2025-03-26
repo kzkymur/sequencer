@@ -5,6 +5,7 @@ import { resolve } from "path";
 // https://vitejs.dev/config/
 export default defineConfig({
   root: "./example/",
+  base: "/sequencer/",
   build: {
     rollupOptions: {
       input: {
