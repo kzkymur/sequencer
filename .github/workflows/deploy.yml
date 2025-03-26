@@ -8,15 +8,15 @@ on:
 
 jobs:
   build:
-    runs-on: ubuntu-22.04
+    runs-on: ubuntu-latest
     steps:
-      - name: Install asdf & tools
+      - name: Setup Tools
         uses: asdf-vm/actions/install@v3
       - run: npm install && npm run build:example
-      - uses: actions/upload-artifact@v3
-        with:
-          name: example
-          path: example/dist
+      # - uses: actions/upload-artifact@v3
+      #   with:
+      #     name: example
+      #     path: example/dist
       - uses: actions/upload-pages-artifact@v1
         with:
           path: example/dist
@@ -31,5 +31,5 @@ jobs:
       pages: write
       id-token: write
     steps:
-      - uses: actions/deploy-pages@v1
+      - uses: actions/deploy-pages@v2
         id: deployment
