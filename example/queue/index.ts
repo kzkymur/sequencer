@@ -6,7 +6,7 @@ let fragments: Fragment[] = [];
 // Configuration handlers
 document.getElementById('pitch')!.addEventListener('change', (e: Event) => {
   const target = e.target as HTMLInputElement;
-  sequencer.setPitch( parseInt(target.value));
+  sequencer.setPitch(parseInt(target.value));
 });
 
 document.getElementById('speed')!.addEventListener('change', (e: Event) => {
@@ -16,7 +16,7 @@ document.getElementById('speed')!.addEventListener('change', (e: Event) => {
 
 document.getElementById('loop')!.addEventListener('change', (e: Event) => {
   const target = e.target as HTMLInputElement;
-  sequencer.setLoopFlag( target.checked);
+  sequencer.setLoopFlag(target.checked);
 });
 
 // Fragment form handler
@@ -24,14 +24,14 @@ document.getElementById('fragment-form')!.addEventListener('submit', (e: SubmitE
   e.preventDefault();
   const nameInput = document.getElementById('frag-name') as HTMLInputElement;
   const durationInput = document.getElementById('frag-duration') as HTMLInputElement;
-  
+
   const name = nameInput.value;
   const duration = parseInt(durationInput.value);
-  
+
   const fragment = new Fragment(name, duration, () => {
     console.log(`Executing fragment: ${name}`);
   });
-  
+
   fragments.push(fragment);
   sequencer.push(fragment);
   updateFragmentList();
@@ -70,7 +70,7 @@ playBtn.addEventListener('click', async () => {
   stopBtn.disabled = false;
   replayBtn.disabled = true;
   await sequencer.play();
-  
+
   playBtn.disabled = false;
   stopBtn.disabled = true;
   replayBtn.disabled = false;

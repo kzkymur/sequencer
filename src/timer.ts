@@ -139,15 +139,13 @@ export class Timer {
       return this.completionPromise;
     }
 
-    createWorker(new URL('./ticker', import.meta.url).href).then(worker => {
+    createWorker(new URL("./ticker", import.meta.url).href).then(worker => {
       this.worker = worker;
-      
       const messageHandler = (e: MessageEvent) => {
         if (e.data.type !== WORKER_TICK_EVENT) return;
         this.exec();
       };
       this.worker.addEventListener("message", messageHandler);
-        
       this.worker.addEventListener('error', (err) => {
         console.error('Worker error:', err);
         this.stop();
@@ -203,7 +201,7 @@ export class Timer {
 
   private calcCurrentTime(): void {
     this.currentTime += this.pitch * this.speed;
-      
+
     if (this.currentTime >= this.totalTime) {
       this.currentTime -= this.totalTime;
       if (!this.loopFlag) {

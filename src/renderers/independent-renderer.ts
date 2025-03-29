@@ -153,6 +153,7 @@ const calculateLanes = (fragments: IndependentFragment[]) => {
 
     if (frag instanceof CustomFragment) {
       const { lanes } = calculateLanes(frag.getFragments());
+      console.log(lanes);
 
     } else {
       let laneIndex = lanes.findIndex(lane => lane.filledUpTo <= start);

@@ -1,5 +1,3 @@
-/// <reference lib="webworker" />
-
 import { WORKER_START_EVENT, WORKER_STOP_EVENT, WORKER_TICK_EVENT, WORKER_UPDATE_EVENT } from './const';
 
 let intervalId: number | NodeJS.Timeout | null = null;
@@ -24,7 +22,7 @@ self.addEventListener('message', (e) => {
     case WORKER_START_EVENT: {
       let { pitch: newPitch } = e.data;
       pitch = newPitch;
-      
+
       start();
       break;
     }
@@ -35,7 +33,7 @@ self.addEventListener('message', (e) => {
 
     case WORKER_UPDATE_EVENT:
       const { type, value } = e.data.payload;
-      switch(type) {
+      switch (type) {
         case 'pitch':
           pitch = value;
           if (intervalId) start();

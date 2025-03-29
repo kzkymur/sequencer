@@ -3,7 +3,7 @@ import { defineConfig } from "vite";
 import { resolve } from "path";
 
 // https://vitejs.dev/config/
-export default defineConfig({
+export default defineConfig(({ command }) => ({
   root: "./example/",
   base: "/sequencer/",
   build: {
@@ -16,7 +16,14 @@ export default defineConfig({
     },
     outDir: "dist"
   },
+  resolve: {
+    alias: {
+      ...(command === 'build' && {
+        '../../src/main': resolve(__dirname, 'dist/main')
+      })
+    }
+  },
   server: {
     port: 8080
   }
-});
+}));

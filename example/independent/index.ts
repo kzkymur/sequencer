@@ -106,7 +106,7 @@ document.getElementById('custom-fragment-form')!.addEventListener('submit', (e: 
   e.preventDefault();
   const nameInput = document.getElementById('custom-frag-name') as HTMLInputElement;
   const startInput = document.getElementById('custom-frag-start') as HTMLInputElement;
-  
+
   const name = nameInput.value;
   const startPoint = parseInt(startInput.value);
 
@@ -149,8 +149,8 @@ function updateFragmentList(): void {
             <strong>${frag.getName()}</strong> (Custom, Start: ${frag.getStartPoint()}ms)
             <div style="margin-left: 20px; color: #666;">
               ${frag.getFragments().map(subFrag =>
-                `• ${subFrag.getName()} (${subFrag.getStartPoint()}ms-${subFrag.getStartPoint() + subFrag.getDuration()}ms)`
-              ).join('<br>')}
+        `• ${subFrag.getName()} (${subFrag.getStartPoint()}ms-${subFrag.getStartPoint() + subFrag.getDuration()}ms)`
+      ).join('<br>')}
             </div>
           </div>
           <button onclick="removeFragment('${frag.getId()}')">Remove</button>
@@ -199,7 +199,7 @@ playBtn.addEventListener('click', async () => {
   stopBtn.disabled = false;
   replayBtn.disabled = true;
   await sequencer.play();
-  
+
   playBtn.disabled = false;
   stopBtn.disabled = true;
   replayBtn.disabled = false;
