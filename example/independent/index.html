@@ -1,215 +1,239 @@
 <!doctype html>
 <html lang="en">
-  <head>
-    <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Sequencer Demo (Independent Mode)</title>
-    <style>
-      /* Toggle styles */
-      .toggle-header {
-        cursor: pointer;
-        display: flex;
-        align-items: center;
-        gap: 8px;
-        padding: 8px 0;
-        user-select: none;
-      }
-      .toggle-header::before {
-        content: '▶';
-        transition: transform 0.2s ease;
-        font-size: 0.8em;
-        color: #666;
-      }
-      .toggle-header.expanded::before {
-        transform: rotate(90deg);
-      }
-      .collapsible {
-        max-height: 0;
-        overflow: hidden;
-        transition: max-height 0.3s ease-out;
-      }
-      .collapsible-content {
-        padding: 15px 0;
-      }
-    
-      body {
-        font-family: Arial, sans-serif;
-        max-width: 800px;
-        margin: 20px auto;
-        padding: 20px;
-      }
-      .config-section, .fragment-controls {
-        margin-bottom: 30px;
-        padding: 15px;
-        border: 1px solid #ddd;
-        border-radius: 5px;
-      }
-      .input-group {
-        margin-bottom: 15px;
-      }
-      label {
-        display: block;
-        margin-bottom: 5px;
-        font-weight: bold;
-      }
-      input[type="number"], input[type="text"] {
-        width: 200px;
-        padding: 5px;
-      }
-      .button-group {
-        display: flex;
-        gap: 10px;
-        margin-top: 15px;
-      }
-      .button-group button {
-        flex: 1;
-      }
-      button {
-        background: #007bff;
-        color: white;
-        border: none;
-        padding: 8px 15px;
-        border-radius: 4px;
-        cursor: pointer;
-      }
-      button:hover {
-        background: #0056b3;
-      }
-      button:disabled {
-        opacity: 0.6;
-        cursor: not-allowed;
-        background-color: #cccccc !important;
-      }
-      #fragment-list {
-        list-style: none;
-        padding: 0;
-      }
-      .fragment-item {
-        padding: 10px;
-        margin: 5px 0;
-        background: #f8f9fa;
-        border-radius: 4px;
-        display: flex;
-        justify-content: space-between;
-        align-items: center;
-      }
-      .timeline {
-        height: 60px;
-        margin: 20px 0;
-        position: relative;
-      }
-      #visualization-canvas {
-        height: 100%;
-        background: #e9ecef;
-        width: 100%;
-      }
-    </style>
-  </head>
-  <body>
-    <nav style="margin-bottom: 2rem;">
-      <a href="../index.html" style="text-decoration: none; color: #2c3e50; font-weight: bold;">← Back to Examples</a>
-    </nav>
-    <h1>Sequencer Demo (Independent Mode)</h1>
-    
-    <div class="config-section">
-      <h2>Configuration</h2>
-      <div class="input-group">
-        <label for="pitch">Pitch (ms):</label>
-        <input type="number" id="pitch" value="100" min="10" step="10">
-      </div>
-      <div class="input-group">
-        <label for="speed">Speed</label>
-        <input type="number" id="speed" value="1.0" min="0.1" step="0.1">
-      </div>
-      <div class="input-group">
-        <label>
-          <input type="checkbox" id="loop"> Loop Sequencer
-        </label>
-      </div>
+
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Sequencer Demo (Independent Mode)</title>
+  <style>
+    /* Toggle styles */
+    .toggle-header {
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      padding: 8px 0;
+      user-select: none;
+    }
+
+    .toggle-header::before {
+      content: '▶';
+      transition: transform 0.2s ease;
+      font-size: 0.8em;
+      color: #666;
+    }
+
+    .toggle-header.expanded::before {
+      transform: rotate(90deg);
+    }
+
+    .collapsible {
+      max-height: 0;
+      overflow: hidden;
+      transition: max-height 0.3s ease-out;
+    }
+
+    .collapsible-content {
+      padding: 15px 0;
+    }
+
+    body {
+      font-family: Arial, sans-serif;
+      max-width: 800px;
+      margin: 20px auto;
+      padding: 20px;
+    }
+
+    .config-section,
+    .fragment-controls {
+      margin-bottom: 30px;
+      padding: 15px;
+      border: 1px solid #ddd;
+      border-radius: 5px;
+    }
+
+    .input-group {
+      margin-bottom: 15px;
+    }
+
+    label {
+      display: block;
+      margin-bottom: 5px;
+      font-weight: bold;
+    }
+
+    input[type="number"],
+    input[type="text"] {
+      width: 200px;
+      padding: 5px;
+    }
+
+    .button-group {
+      display: flex;
+      gap: 10px;
+      margin-top: 15px;
+    }
+
+    .button-group button {
+      flex: 1;
+    }
+
+    button {
+      background: #007bff;
+      color: white;
+      border: none;
+      padding: 8px 15px;
+      border-radius: 4px;
+      cursor: pointer;
+    }
+
+    button:hover {
+      background: #0056b3;
+    }
+
+    button:disabled {
+      opacity: 0.6;
+      cursor: not-allowed;
+      background-color: #cccccc !important;
+    }
+
+    #fragment-list {
+      list-style: none;
+      padding: 0;
+    }
+
+    .fragment-item {
+      padding: 10px;
+      margin: 5px 0;
+      background: #f8f9fa;
+      border-radius: 4px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+
+    .timeline {
+      height: 200px;
+      margin: 20px 0;
+      position: relative;
+    }
+
+    #visualization-canvas {
+      height: 100%;
+      background: #e9ecef;
+      width: 100%;
+    }
+  </style>
+</head>
+
+<body>
+  <nav style="margin-bottom: 2rem;">
+    <a href="../index.html" style="text-decoration: none; color: #2c3e50; font-weight: bold;">← Back to Examples</a>
+  </nav>
+  <h1>Sequencer Demo (Independent Mode)</h1>
+
+  <div class="config-section">
+    <h2>Configuration</h2>
+    <div class="input-group">
+      <label for="pitch">Pitch (ms):</label>
+      <input type="number" id="pitch" value="100" min="10" step="10">
     </div>
+    <div class="input-group">
+      <label for="speed">Speed</label>
+      <input type="number" id="speed" value="1.0" min="0.1" step="0.1">
+    </div>
+    <div class="input-group">
+      <label>
+        <input type="checkbox" id="loop"> Loop Sequencer
+      </label>
+    </div>
+  </div>
 
-    <div class="fragment-controls">
-      <h2>Fragment Management</h2>
-      
-      <div class="fragment-type-section">
-        <h3>Independent Fragments</h3>
-        <form id="fragment-form">
-          <div class="input-group">
-            <label for="frag-name">Fragment Name:</label>
-            <input type="text" id="frag-name" required>
-          </div>
-          <div class="input-group">
-            <label for="frag-duration">Duration (ms):</label>
-            <input type="number" id="frag-duration" required min="100" step="100">
-          </div>
-          <div class="input-group">
-            <label for="frag-start">Start Point (ms):</label>
-            <input type="number" id="frag-start" required min="0" step="100">
-          </div>
-          <div class="button-group">
-            <button type="button" id="add-to-sequencer-btn" style="background-color: #28a745">Add to Sequencer</button>
-            <button type="button" id="add-to-pool-btn" style="background-color: #17a2b8">Add to CustomFragment Pool</button>
-          </div>
-        </form>
-      </div>
+  <div class="fragment-controls">
+    <h2>Fragment Management</h2>
 
-      <div class="fragment-type-section">
-        <div class="toggle-header" id="custom-frag-toggle">
-          <span>Custom Fragments</span>
+    <div class="fragment-type-section">
+      <h3>Independent Fragments</h3>
+      <form id="fragment-form">
+        <div class="input-group">
+          <label for="frag-name">Fragment Name:</label>
+          <input type="text" id="frag-name" required>
         </div>
-        <div class="collapsible" id="custom-frag-section">
-          <div class="collapsible-content">
-            <form id="custom-fragment-form">
-              <div class="input-group">
-                <label for="custom-frag-name">Custom Fragment Name:</label>
-                <input type="text" id="custom-frag-name" required>
+        <div class="input-group">
+          <label for="frag-duration">Duration (ms):</label>
+          <input type="number" id="frag-duration" required min="100" step="100">
+        </div>
+        <div class="input-group">
+          <label for="frag-start">Start Point (ms):</label>
+          <input type="number" id="frag-start" required min="0" step="100">
+        </div>
+        <div class="button-group">
+          <button type="button" id="add-to-sequencer-btn" style="background-color: #28a745">Add to Sequencer</button>
+          <button type="button" id="add-to-pool-btn" style="background-color: #17a2b8">Add to CustomFragment
+            Pool</button>
+        </div>
+      </form>
+    </div>
+
+    <div class="fragment-type-section">
+      <div class="toggle-header" id="custom-frag-toggle">
+        <span>Custom Fragments</span>
+      </div>
+      <div class="collapsible" id="custom-frag-section">
+        <div class="collapsible-content">
+          <form id="custom-fragment-form">
+            <div class="input-group">
+              <label for="custom-frag-name">Custom Fragment Name:</label>
+              <input type="text" id="custom-frag-name" required>
+            </div>
+            <div class="input-group">
+              <label for="custom-frag-start">Start Point (ms):</label>
+              <input type="number" id="custom-frag-start" required min="0" step="100">
+            </div>
+            <div class="input-group">
+              <label>Include Fragments:</label>
+              <div id="fragment-selection"
+                style="max-height: 1000px; overflow-y: auto; border: 1px solid #ddd; padding: 10px; margin: 5px 0;">
+                <!-- Dynamically populated -->
               </div>
-              <div class="input-group">
-                <label for="custom-frag-start">Start Point (ms):</label>
-                <input type="number" id="custom-frag-start" required min="0" step="100">
-              </div>
-              <div class="input-group">
-                <label>Include Fragments:</label>
-                <div id="fragment-selection" style="max-height: 200px; overflow-y: auto; border: 1px solid #ddd; padding: 10px; margin: 5px 0;">
-                  <!-- Dynamically populated -->
-                </div>
-              </div>
-              <button type="submit">Create Custom Fragment</button>
-            </form>
-          </div>
+            </div>
+            <button type="submit">Create Custom Fragment</button>
+          </form>
         </div>
       </div>
-      
-      <h3>Fragments</h3>
-      <ul id="fragment-list"></ul>
     </div>
 
-    <div class="playback-controls">
-      <h2>Playback</h2>
-      <button id="replay-btn" style="background-color: #28a745">Replay</button>
-      <button id="play-btn">Play</button>
-      <button id="stop-btn">Stop</button>
-      <div class="timeline">
-        <canvas id="visualization-canvas"></canvas>
-      </div>
-      <div id="status">Status: Stopped</div>
+    <h3>Fragments</h3>
+    <ul id="fragment-list"></ul>
+  </div>
+
+  <div class="playback-controls">
+    <h2>Playback</h2>
+    <button id="replay-btn" style="background-color: #28a745">Replay</button>
+    <button id="play-btn">Play</button>
+    <button id="stop-btn">Stop</button>
+    <div class="timeline">
+      <canvas id="visualization-canvas"></canvas>
     </div>
+    <div id="status">Status: Stopped</div>
+  </div>
 
-    <script type="module" src="/independent/index.ts"></script>
-    <script>
-      // Add toggle functionality
-      const toggleHeader = document.getElementById('custom-frag-toggle');
-      const collapsibleSection = document.getElementById('custom-frag-section');
-      
-      toggleHeader.addEventListener('click', () => {
-        const isExpanded = toggleHeader.classList.toggle('expanded');
-        collapsibleSection.style.maxHeight = isExpanded
-          ? `${collapsibleSection.scrollHeight}px`
-          : '0';
-      });
+  <script type="module" src="./index.ts"></script>
+  <script>
+    // Add toggle functionality
+    const toggleHeader = document.getElementById('custom-frag-toggle');
+    const collapsibleSection = document.getElementById('custom-frag-section');
 
-      // Initialize collapsed state
-      collapsibleSection.style.maxHeight = '0';
-    </script>
-  </body>
+    toggleHeader.addEventListener('click', () => {
+      const isExpanded = toggleHeader.classList.toggle('expanded');
+      collapsibleSection.style.maxHeight = isExpanded
+        ? `1000px`
+        : '0';
+    });
+
+    // Initialize collapsed state
+    collapsibleSection.style.maxHeight = '0';
+  </script>
+</body>
+
 </html>
