@@ -202,7 +202,7 @@ export class Timer {
   private calcCurrentTime(): void {
     this.currentTime += this.pitch * this.speed;
 
-    if (this.currentTime >= this.totalTime) {
+    if (this.currentTime > this.totalTime) {
       this.currentTime -= this.totalTime;
       if (!this.loopFlag) {
         this.resolveCompletion();
